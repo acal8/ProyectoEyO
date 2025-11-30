@@ -7,25 +7,24 @@ remove(list=ls())
 # funciones incluidas abajo
 #source("example_funcs.R")
 source("solucion_javi.R")
+teamName <- "????"
+# integrante 1: 
+# integrante 2:
+# integrante 3:
 
-teamName <- ""
-# integrante 1: Adrián Carrasco Alcalá
-# integrante 2: Javier Herrero Pérez
-# integrante 3: Clara Montalvá Barcenilla
-
-# Sección 2 - Predicción de rendimientos
+# seccion 2 - predicciones
 getPred <- getPred000 # Sustituir por getPred 
 
-# Sección 3 - Utilidad Media-Varianza
+# seccion 3 - utilidad media-varianz
 # utilidad media-varianza, alfa_i positiva o negativa
 
-gammaMV = 1
+gammaMV = 50
 getSigmaMV <- getSigmaDiag # Sustituir por getSigma
 getAlphaMV <- getAlphaRandom  # Sustituir por getAlphaMV
 
 # utilidad media-varianza, alfa_i positiva 
 
-gammaMVPos = 1
+gammaMVPos = 50
 getSigmaMVPos <- getSigmaDiag # Sustituir por getSigma
 getAlphaMVPos <- getAlphaRandomPos # Sustituir por getAlphaMVPos
 
@@ -33,13 +32,13 @@ getAlphaMVPos <- getAlphaRandomPos # Sustituir por getAlphaMVPos
 
 # ESTE APARTADO CREO QUE ES EL QUE NO SE EVALÚA !!!!!!!
 
-gammaMVPosInt = 1
-getSigmaMVPosInt <- getSigmaDiag
-getAlphaMVPosInt <- getAlphaRandomPosInt
+# gammaMVPosInt = 100
+# getSigmaMVPosInt <- getSigmaDiag
+# getAlphaMVPosInt <- getAlphaRandomPosInt
 
-# Sección 4 - 
+# seccion 4 - 
 # utilidad log, alfa_i positiva o negativa
-gammaLog = 1
+gammaLog = 50
 getSigmaLog <- getSigmaDiag # Sustituir por getSigma
 getAlphaLog <- getAlphaRandom
 
@@ -89,10 +88,10 @@ passChecks <- getChecks(alpha_hat, mode=c("sum1","pos"))
 ret <- getRet(alpha_hat, Xtest, passChecks)
 evals <- c(evals, retMVPos=ret)
 Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaMVPos, passChecks, Umv)
-evals <- c(evals,  UmvPos = Umv_rel)
+evals <- c(evals,  UmvPos=Umv_rel)
 cat("Sección 3.2: \n", evals, "\n")
+
 # # utilidad media-varianza, alfa_i positiva y entera/5
-# 
 # alpha_hat <- getAlpha_ts(mu_hat, se_hat, gammaMVPosInt, getSigmaMVPosInt, getAlphaMVPosInt, Xtrain, Xtest)
 # passChecks <- getChecks(alpha_hat, mode=c("sum1","pos","int"))
 # ret <- getRet(alpha_hat, Xtest, passChecks)
@@ -100,7 +99,9 @@ cat("Sección 3.2: \n", evals, "\n")
 # Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaMVPosInt, passChecks, Umv)
 # evals <- c(evals,  UmvPosInt=Umv_rel)
 # cat("Sección 3.3: \n", evals, "\n")
-# 
+
+
+
 # # seccion 4 - 
 # # utilidad log, alfa_i positiva o negativa
 # 
