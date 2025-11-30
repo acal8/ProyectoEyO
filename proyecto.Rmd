@@ -1,0 +1,105 @@
+---
+title: "Proyecto Estadística y Optimización"
+subtitle: "Máster en Ciencia de Datos - UV"
+author: "Adrián Carrasco Alcalá, Javier Herrero Pérez y Clara Montalvá Barcenilla"
+date: "Curso 2025-2026"
+output: html_document
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Planteamiento
+
+Tu equipo ha decidido invertir en un portafolio con 5 activos. Cuentas con un histórico de rendimientos $r_i^t$ para $t = 1,\dots,T$ y $i = 1,\dots,5$. Quieres usar este histórico para decidir como repartirás tu inversión inicial $I_0$ en los 5 activos. Es decir que quieres decidir sobre los valores $\alpha_t^i$ con $\sum \alpha_i^t = 1$ para $t = T + 1, \dots, T + r$, en función del rendimiento que esperas de cada activo para el próximo periodo y de una función de utilidad que describe tus preferencias.
+
+# Predicción de rendimientos
+
+1. Obten un modelo prónosticos para $X_t^i | X_0^i, \dots, X_t - 1^i$ para $i = 1, 2, \dots, 5$. Utilizando los datos $X_{train}$ como consideres apropiado.
+
+2. Obtén tanto el valor esperado del pronóstico $E[X_t^i | X_0^i, \dots, X_t - 1^i]$ como la varianza $V[X_t^i | X_0^i, \dots, X_t - 1^i]$.
+
+3. En cada momento $t = T + 1, ..., T + r$ podrás utilizar todo el pasado de la serie como $1, \dots, t − 1$ de la forma que consideres adecuado para realizar tu pronóstico.
+
+4. No verás el periodo de evaluación $t = T + 1, ..., T + r$ hasta después de entregar el proyecto por lo que debes generar un función (oneStepAhead($X_{1:t}$, $M_{\theta}$)...
+return $\hat{X}_t + 1$). Es decir que toma el pasado de las 5 series, los modelos de
+predicción de las 5 series y que regresa un el pronóstico a un paso (valor esperado y varianza) de los 5 activos.
+
+# Utilidad Media-Varianza
+
+El rendimiento $R$ para el periodo $t$ de tu portafolio se puede expresar como
+
+$$R_t = \alpha_t^T r_t$$
+
+$$\sum_i \alpha_{ti} = 1$$
+
+Donde $r_t$ es un vector aleatorio con los redimientos de los activos durante el periodo $t$. Podemos expresar el rendimiento esperado del portafolio y su varianza como:
+
+$$E[R_t] = E[\alpha_t^T r_t] = \alpha_t^T E[r_t] = \alpha_t^T \mu_t$$
+
+$$V[R_t] = V[\alpha_t^T r_t] = \alpha_t^T V[r_t] \alpha = \alpha_t^T \sum_t \alpha$$
+
+Con esto podemos definir una función de utilidad (utilidad media varianza) que podemos optimizar de tal forma que compensamos nuestro deseo de obtener mejores rendimientos con el deseo de mitigar el riesgo de los peores escenarios:
+
+$$U_{MV}(\alpha_t, \gamma; \mu_t, \sum_t) = \alpha_t^T \mu_t - \dfrac{\gamma}{2} \alpha_t^T \sum_t \alpha$$
+
+Notar que del apartado uno podemos obtener $\mu_t$ y la diagonal de $\sum_t$ (que será constante en $t$). Para estimar $Sigma_t$ en su totalidad notar que podemos descomponer la matriz de covarianzas como:
+
+$$ \sum_t = DRD $$
+donde $D$ es una matriz diagonal con valores $D_ii = \sigma_i$ y $R$ es una matriz de correlación que debemos elegir/estimar.
+
+Cuando permitimos valores negativos $\alpha_{ti}$, se denomina tomar una posición _corta_ con respecto al activo $i$ y significa que permitimos que el inversor tome prestado contra el activo $i$ pero tendrá que pagar los rendimientos obtenidos por ese activo en lugar de recibirlos.
+
+Para calcular el rendimiento obtenido total usamos la siguiente fórmula
+
+$$R = I_T \prod_{t = T + 1}^{T + r} (1 + R_t)$$
+donde $I_T = 100$ es nuestra inversión inicial.
+
+1. Obtener $\alpha_t$ para $t = T + 1, ..., T + r$ optimizando $U_{MV}$. Elegir $\gamma$ y estimar $\sum_t$ tomando en cuenta que evaluara el rendimiento total en un periodo de prueba. Se permite tomar posiciones _cortas_.
+
+2. Repetir pero ahora prohibiendo posiciones cortas.
+
+3. Ahora supongamos además que cada activo se vende en unidades enteras. Esto lo aproximaremos asumiendo que $\alpha_{ti} \in \{\dfrac{0}{5}, \dfrac{1}{5}, \dfrac{2}{5}, \dfrac{3}{5}, \dfrac{4}{5}, \dfrac{5}{5}\}$. No se permiten posiciones cortas.
+
+# Log-utilidad
+
+Otra función de utilidad que se suele usar y que reconoce la naturaleza _compuesta_ del rendimiento de un portafolio durante un periodo es:
+
+$$U_{\log}(\alpha_t) = E[\log(1 + \alpha^T r_t)]$$
+
+Utilizando su serie de Taylor se puede aproximar como
+
+$$U_{\log}(\alpha_t; \mu_t, \sum_t) \approx \log(1 + \alpha^T \mu_t) - \dfrac{1}{2} \dfrac{\alpha_t^T \sum_t \alpha_t}{(1 + \alpha_t^T \mu_t)^2}$$
+
+1. Obtener $\alpha_t$ para $t = T + 1, \dots, T + r$ optimizando $U_{\log}$. Se permite tomar posiciones _cortas_ y no enteras.
+
+# Evaluación
+
+La evaluación se hará en función del despempeño en 9 métricas durante el periodo test:
+
+1. Promedio simple del MAPE del pronóstico (valor esperado) de los 5 activos.
+
+2. Desempeño promedio durante el periodo de evaluación en la utilidad media-varianza. Con inversiones $\alpha_t^i$ positivas o negativas.
+
+3. Rendimiento obtenido durante el periodo de evaluación optimizando utilidad media-varianza. Con inversiones $\alpha_t^i$ positivas o negativas.
+
+4. Desempeño promedio durante el periodo de evaluación en la utilidad media-varianza. Con inversiones estrictamente $\alpha_t^i$ positivas.
+
+5. Rendimiento obtenido durante el periodo de evaluación en la utilidad media-varianza. Con inversiones estrictamente $\alpha_t^i$ positivas.
+
+6. Desempeño promedio durante el periodo de evaluación en la utilidad log-rendimiento. Con inversiones estrictamente $\alpha_t^i$ positivas o negativas.
+
+7. Rendimiento obtenido durante el periodo de evaluación en la utilidad log-rendimiento. Con inversiones estrictamente $\alpha_t^i$ positivas o negativas.
+
+8. Desempeño promedio durante el periodo de evaluación en la utilidad media-varianza. Con inversiones $\alpha_t^i$ y estrictamente positivas y enteras.
+
+9. Rendimiento obtendido durante el periodo de evaluación en la utilidad media-varianza. Con inversiones $\alpha_t^i$ estrictamente positivas y enteras.
+
+Se les darán funciones en R para que puedan simular la evaluación de estas 9 métricas en un periodo de validación que elijan del histórico de entrenamiento.
