@@ -1,33 +1,36 @@
 # solucion trivial ejemplo
 remove(list=ls())
-setwd("/home/emiliano/Documents/estadistica/estadistica_y_optimizacion_master/")
+# setwd("/home/emiliano/Documents/estadistica/estadistica_y_optimizacion_master/")
 
 # cargamos funciones con soluciones triviales. 
 # Cada equipo debera definir en su archivo de solucion_teamName.R todas las
 # funciones incluidas abajo
-source("example_funcs.R")
-
+#source("example_funcs.R")
+source("solucion_javi.R")
 teamName <- "????"
 # integrante 1: 
 # integrante 2:
 # integrante 3:
 
 # seccion 2 - predicciones
-getPred <- getPred000
+getPred <- getPred000 # Sustituir por getPred 
 
 # seccion 3 - utilidad media-varianz
 # utilidad media-varianza, alfa_i positiva o negativa
+
 gammaMV = 1
-getSigmaMV <- getSigmaDiag
-getAlphaMV <- getAlphaRandom 
+getSigmaMV <- getSigmaDiag # Sustituir por getSigma
+getAlphaMV <- getAlphaRandom  # Sustituir por getAlphaMV
 
 # utilidad media-varianza, alfa_i positiva 
 
 gammaMVPos = 1
-getSigmaMVPos <- getSigmaDiag
-getAlphaMVPos <- getAlphaRandomPos
+getSigmaMVPos <- getSigmaDiag # Sustituir por getSigma
+getAlphaMVPos <- getAlphaRandomPos # Sustituir por getAlphaMVPos
 
 # utilidad media-varianza, alfa_i positiva y entera/5
+
+# ESTE APARTADO CREO QUE ES EL QUE NO SE EVALÚA !!!!!!!
 
 gammaMVPosInt = 1
 getSigmaMVPosInt <- getSigmaDiag
@@ -36,7 +39,7 @@ getAlphaMVPosInt <- getAlphaRandomPosInt
 # seccion 4 - 
 # utilidad log, alfa_i positiva o negativa
 gammaLog = 1
-getSigmaLog <- getSigmaDiag
+getSigmaLog <- getSigmaDiag # Sustituir por getSigma
 getAlphaLog <- getAlphaRandom
 
 ###############################################################
@@ -44,7 +47,7 @@ getAlphaLog <- getAlphaRandom
 ###############################################################
 source("eval_funcs.R")
 
-setwd("/home/emiliano/Documents/estadistica/estadistica_y_optimizacion_master/")
+#setwd("/home/emiliano/Documents/estadistica/estadistica_y_optimizacion_master/")
 X <- read.csv("stock_returns_train.csv")
 X <- ts(X)
 
@@ -54,8 +57,8 @@ Xtest <- window(X, start=8*12+1,end=10*12)
 
 # Test mode - no tendran el archivo stock_returns_test.csv asi que esto lo 
 # ejecutaremos una vez entreguen soluciones
-#Xtrain <- X
-#Xtest <- ts(read.csv("stock_returns_test.csv"))
+# Xtrain <- X
+# Xtest <- ts(read.csv("stock_returns_test.csv"))
 
 
 #seccion 2 - predicciones
@@ -67,7 +70,7 @@ se_hat = res$se_hat
 # MAPE
 mape <- mean(abs(Xtest-mu_hat)/abs(Xtest))
 evals <- c(mape=mape)
-
+cat("Sección 2: \n", evals, "\n")
 # seccion 3 - utilidad media varianza
 # utilidad media-varianza, alfa_i positiva o negativa
 
@@ -77,36 +80,36 @@ ret <- getRet(alpha_hat, Xtest, passChecks)
 evals <- c(evals, retMV=ret)
 Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaMV, passChecks, Umv)
 evals <- c(evals,  Umv=Umv_rel)
-
-# utilidad media-varianza, alfa_i positiva 
-
+cat("Sección 3.1: \n", evals, "\n")
+# # utilidad media-varianza, alfa_i positiva 
+# 
 alpha_hat <- getAlpha_ts(mu_hat, se_hat, gammaMVPos, getSigmaMVPos, getAlphaMVPos, Xtrain, Xtest)
 passChecks <- getChecks(alpha_hat, mode=c("sum1","pos"))
 ret <- getRet(alpha_hat, Xtest, passChecks)
 evals <- c(evals, retMVPos=ret)
 Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaMVPos, passChecks, Umv)
 evals <- c(evals,  UmvPos=Umv_rel)
-
-# utilidad media-varianza, alfa_i positiva y entera/5
-
-alpha_hat <- getAlpha_ts(mu_hat, se_hat, gammaMVPosInt, getSigmaMVPosInt, getAlphaMVPosInt, Xtrain, Xtest)
-passChecks <- getChecks(alpha_hat, mode=c("sum1","pos","int"))
-ret <- getRet(alpha_hat, Xtest, passChecks)
-evals <- c(evals, retMVPosInt=ret)
-Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaMVPosInt, passChecks, Umv)
-evals <- c(evals,  UmvPosInt=Umv_rel)
-
-
-# seccion 4 - 
-# utilidad log, alfa_i positiva o negativa
-
+cat("Sección 3.2: \n", evals, "\n")
+# # utilidad media-varianza, alfa_i positiva y entera/5
+# 
+# alpha_hat <- getAlpha_ts(mu_hat, se_hat, gammaMVPosInt, getSigmaMVPosInt, getAlphaMVPosInt, Xtrain, Xtest)
+# passChecks <- getChecks(alpha_hat, mode=c("sum1","pos","int"))
+# ret <- getRet(alpha_hat, Xtest, passChecks)
+# evals <- c(evals, retMVPosInt=ret)
+# Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaMVPosInt, passChecks, Umv)
+# evals <- c(evals,  UmvPosInt=Umv_rel)
+# cat("Sección 3.3: \n", evals, "\n")
+# 
+# # seccion 4 - 
+# # utilidad log, alfa_i positiva o negativa
+# 
 alpha_hat <- getAlpha_ts(mu_hat, se_hat, gammaLog, getSigmaLog, getAlphaLog, Xtrain, Xtest)
 passChecks <- getChecks(alpha_hat, mode=c("sum1"))
 ret <- getRet(alpha_hat, Xtest, passChecks)
 evals <- c(evals, retLog=ret)
 Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaLog, passChecks, Umv)
 evals <- c(evals,  UmvPosInt=Umv_rel)
+cat("Sección 4: \n", evals, "\n")
 
-evals
 
 
