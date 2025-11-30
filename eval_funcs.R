@@ -51,7 +51,7 @@ getChecks <- function(alpha_hat, mode=c("sum1","pos","int")){
   }
   if(("pos" %in% mode) & passChecks){
     print("pos check")
-    passChecks <- all(alpha_hat>=0)
+    passChecks <- all(alpha_hat>=-10e-14) # Tenemos en cuenta posibles erroes de precisión de R
   }
   if( ("int" %in% mode) & passChecks){
     passChecks <- sapply(seq(0,5)/5, function(i) abs(alpha_hat-i) < 1e-6, simplify="array")

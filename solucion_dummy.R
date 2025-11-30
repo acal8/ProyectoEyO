@@ -7,15 +7,16 @@ remove(list=ls())
 # funciones incluidas abajo
 #source("example_funcs.R")
 source("solucion_javi.R")
-teamName <- "????"
-# integrante 1: 
-# integrante 2:
-# integrante 3:
 
-# seccion 2 - predicciones
+teamName <- ""
+# integrante 1: Adrián Carrasco Alcalá
+# integrante 2: Javier Herrero Pérez
+# integrante 3: Clara Montalvá Barcenilla
+
+# Sección 2 - Predicción de rendimientos
 getPred <- getPred000 # Sustituir por getPred 
 
-# seccion 3 - utilidad media-varianz
+# Sección 3 - Utilidad Media-Varianza
 # utilidad media-varianza, alfa_i positiva o negativa
 
 gammaMV = 1
@@ -36,7 +37,7 @@ gammaMVPosInt = 1
 getSigmaMVPosInt <- getSigmaDiag
 getAlphaMVPosInt <- getAlphaRandomPosInt
 
-# seccion 4 - 
+# Sección 4 - 
 # utilidad log, alfa_i positiva o negativa
 gammaLog = 1
 getSigmaLog <- getSigmaDiag # Sustituir por getSigma
@@ -88,7 +89,7 @@ passChecks <- getChecks(alpha_hat, mode=c("sum1","pos"))
 ret <- getRet(alpha_hat, Xtest, passChecks)
 evals <- c(evals, retMVPos=ret)
 Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaMVPos, passChecks, Umv)
-evals <- c(evals,  UmvPos=Umv_rel)
+evals <- c(evals,  UmvPos = Umv_rel)
 cat("Sección 3.2: \n", evals, "\n")
 # # utilidad media-varianza, alfa_i positiva y entera/5
 # 
