@@ -2,6 +2,7 @@ library(readr)
 library(ggplot2)
 library(forecast)
 library(quadprog)
+library(nloptr)
 # seccion 2 - predicciones
 
 getPred000 <- function(x_train, x_test_past){
@@ -28,6 +29,8 @@ getSigmaDiag <- function(sig, Xpast){
   R<-cor(Xpast)
   D<-diag(sig)
   Sigma_hat<-D%*%R%*%D
+  epsilon <- 1e-8
+  Sigma_hat <- Sigma_hat + diag(Sigma_hat)*epsilon
   return(Sigma_hat)
 }
 
@@ -43,6 +46,10 @@ getAlphaRandom <- function(mu,Sigma, gamma){
   lambda <- as.numeric(numerador / denominador)
   
   alpha <- Sigma_inversa%*%(mu-lambda*I) / gamma
+  
+  to_zero <- abs(alpha) < 1e-15
+  alpha[to_zero] <- 0.0
+  
   return(alpha)
 }
 
@@ -52,20 +59,16 @@ getAlphaRandomPos <- function(mu,Sigma, gamma){
   # Usar la librería quadprog
   
   n<-length(mu)
-  
   Dmat_qp <- gamma*Sigma
   dvec_qp <- mu
   
-  
-  # A. Restricción de IGUALDAD (Sum(alpha) = 1)
+  # Restricción de igualdad Sum(alpha) = 1
   A_eq <- matrix(1, nrow = n, ncol = 1)
   b_eq <- 1
   
-  
-  # B. Restricciones de DESIGUALDAD (alpha_i >= 0)
+  # Restricciones de desigualdad alpha_i >= 0
   A_ineq <- diag(n) # Matriz Identidad
   b_ineq <- rep(0, n)
-  
   
   Amat_qp<-cbind(A_eq, A_ineq)
   bvec_qp <- c(b_eq, b_ineq)
@@ -79,80 +82,66 @@ getAlphaRandomPos <- function(mu,Sigma, gamma){
     meq = 1 # Primera restricción
   )
   alpha<- solucion$solution
-  return(alpha)
-}
-
-
-# alpha random y positivo y en enteros/5 NO HACER!!!!
-getAlphaRandomPosInt <- function(mu, Sigma, gamma){
-  smpl <- c()
-  sumSmpl <- 0
-  for(i in 1:5){
-    smpl <- c(smpl, sample(0:(5-sumSmpl),1))
-    sumSmpl <- sum(smpl)
-  }
-  alpha <- smpl/5
+  
+  to_zero <- abs(alpha) < 1e-15
+  alpha[to_zero] <- 0.0
+  
   return(alpha)
 }
 
 
 
 # seccion 4 - 
-# utilidad log, alfa_i positiva o negativa
-
+# utilidad log, alfa_i positiva
+# OJO! ANTES ESTABA PUESTO PARA ALFA_I POSITIVA O NEGATIVA, PERO EN EL ENUNCIADO PONE
+# QUE TIENE QUE SER SIN POSICIONES CORTAS (ALPHA>=0)
 getAlphaLog <- function(mu, Sigma, gamma){
-  
   n <- length(mu)
   
-  # --- 1. Función Objetivo a MINIMIZAR (-Ulog) ---
-  # El argumento 'alpha_n_1' son los n-1 pesos que optimiza 'optim'.
-  Ulog_minimizacion <- function(alpha_n_1) {
+  Ulog_minimizacion <- function(alpha) {
+    Er <- (t(alpha)%*%mu)[1,1]
     
-    # Reconstrucción del vector completo (5 variables)
-    alpha_full <- numeric(n)
-    alpha_full[1:(n-1)] <- alpha_n_1
-    alpha_full[n] <- 1 - sum(alpha_n_1) # Restricción de suma: alpha[n] = 1 - Sum(alpha[1:4])
-    
-    # Calculamos Er y evitamos log(<=0)
-    Er <- sum(alpha_full * mu)
-    
-    if (1 + Er <= 0) {
-      return(1e10) # Penalización si el rendimiento esperado es demasiado negativo
+    if (1 + Er <= 1e-10) {
+      return(1e20)
     }
     
-    # 2. Fórmula de -Ulog (Función a minimizar)
-    # Ulog = log(1+Er) - 0.5 * (alpha^T Sigma alpha) / (1+Er)^2
-    # -Ulog = 0.5 * (alpha^T Sigma alpha) / (1+Er)^2 - log(1+Er)
-    
-    riskTerm <- (t(alpha_full) %*% Sigma %*% alpha_full) / (1 + Er)^2
+    riskTerm <- (t(alpha)%*%Sigma%*%alpha)[1,1]/((1+Er)^2)
     logTerm <- log(1 + Er)
     
-    # Devolvemos el negativo de la utilidad
-    return(0.5 * riskTerm - logTerm)
+    # Multiplicamos el término de riesgo por gamma
+    return(gamma*0.5*riskTerm - logTerm) 
   }
   
-  # --- 2. Parámetros de Optimización ---
-  par_inicial <- rep(1/n, n-1) # Punto de partida: [0.2, 0.2, 0.2, 0.2]
+  # Restricción de igualdad Sum(alpha) = 1
+  eval_g_eq <- function(alpha) {
+    return(sum(alpha) - 1) 
+  }
   
-  # Llamamos a optim
-  # Pasamos los datos fijos (mu, Sigma, gamma) usando '...'
-  sol <- optim(
-    par = par_inicial,
-    fn = Ulog_minimizacion,
-    method = "BFGS" # Adecuado para optimización no lineal sin restricciones de límites
+  # Restricciones de desigualdad alpha_i >= 0
+  # En la función NLOPTR se necesita h(alpha) <= 0
+  eval_g_ineq <- function(alpha) {
+    return(-alpha)
+  }
+  
+  # Punto de partida
+  par_inicial <- rep(1/n, n) 
+  
+  solucion <- nloptr(
+    x0 = par_inicial,
+    eval_f = Ulog_minimizacion,
+    eval_g_eq = eval_g_eq,
+    eval_g_ineq = eval_g_ineq,
+    opts = list(algorithm = "NLOPT_LN_COBYLA", 
+                xtol_rel = 1e-6)
   )
   
-  # --- 3. Construcción del Resultado Final ---
-  alpha_resultado <- numeric(n)
+  alpha_resultado <- solucion$solution
   
-  # Asignamos los parámetros óptimos
-  alpha_resultado[1:(n-1)] <- sol$par
   
-  # Calculamos el último peso con la restricción de suma=1
-  alpha_resultado[n] <- 1 - sum(alpha_resultado[1:(n-1)])
-  
-  # La normalización final 'alpha_resultado / sum(alpha_resultado)' es redundante
-  # ya que el algoritmo está diseñado para que la suma sea 1.
+  to_zero <- abs(alpha_resultado) < 1e-15
+  alpha_resultado[to_zero] <- 0.0
   
   return(alpha_resultado)
 }
+
+
