@@ -29,8 +29,6 @@ getSigmaDiag <- function(sig, Xpast){
   R<-cor(Xpast)
   D<-diag(sig)
   Sigma_hat<-D%*%R%*%D
-  epsilon <- 1e-8
-  Sigma_hat <- Sigma_hat + diag(Sigma_hat)*epsilon
   return(Sigma_hat)
 }
 
