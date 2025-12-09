@@ -42,7 +42,7 @@ source("eval_funcs.R")
 
 #setwd("/home/emiliano/Documents/estadistica/estadistica_y_optimizacion_master/")
 X <- read.csv("stock_returns_train_2.csv")
-X <- ts(X)
+X <- ts(X)/100
 
 # Validation mode - para que se evaluen asi mismos con el 
 Xtrain <- window(X, start=1,end=8*12) # el start-end es un ejemplo, pueden cambiarlo
