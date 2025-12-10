@@ -1,0 +1,226 @@
+---
+title: "graficas"
+author: "Javier Herrero Pérez"
+date: "2025-12-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+#
+
+
+```{r pressure, echo=FALSE}
+source("solucion_XXX.R", echo = F)
+```
+```{r}
+evals
+```
+
+
+```{r,echo=F}
+# 1. Definir el rango de valores de gamma
+# Podemos usar una secuencia lineal, por ejemplo, 20 puntos de 1 a 20.
+gamma_values <- seq(from = 1, to = 20, length.out = 20) 
+
+# 2. Inicializar un dataframe para guardar los resultados
+results_mv_sweep <- data.frame(
+  Gamma = gamma_values,
+  Retorno_MV = numeric(length(gamma_values)),
+  Utilidad_MV = numeric(length(gamma_values))
+)
+
+# --- 3. Bucle para calcular las métricas ---
+
+# Asegúrate de que mu_hat, se_hat, Xtrain, Xtest y las funciones
+# getSigmaMV, getAlphaMV, getChecks, getRet, getUEval estén definidas previamente.
+
+for (i in seq_along(gamma_values)) {
+  
+  # a. Asignar el gamma actual para la iteración
+  current_gammaMV <- gamma_values[i]
+  
+  # b. Optimización del portafolio (cálculo de pesos)
+  alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaMV, getSigmaMV, getAlphaMV, Xtrain, Xtest)
+  
+  # c. Evaluación
+  passChecks <- getChecks(alpha_hat, mode="sum1")
+  ret <- getRet(alpha_hat, Xtest, passChecks)
+  Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaMV, passChecks, Umv)
+  
+  # d. Guardar los resultados
+  results_mv_sweep$Retorno_MV[i] <- ret
+  results_mv_sweep$Utilidad_MV[i] <- Umv_rel
+}
+
+
+# 1. Definir el rango de valores de gamma
+gamma_values <- seq(from = 1, to = 20, length.out = 20) 
+
+# 2. Inicializar un dataframe para guardar los resultados
+results_mv_pos_sweep <- data.frame(
+  Gamma = gamma_values,
+  Retorno_MVPos = numeric(length(gamma_values)),
+  Utilidad_MVPos = numeric(length(gamma_values))
+)
+
+# --- Bucle para calcular las métricas ---
+
+for (i in seq_along(gamma_values)) {
+  
+  current_gammaMVPos <- gamma_values[i]
+  
+  # a. Optimización del portafolio (U_MV con restricción POS)
+  # Usamos gammaMVPos, getSigmaMVPos, getAlphaMVPos y passChecks mode="pos"
+  alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaMVPos, getSigmaMVPos, getAlphaMVPos, Xtrain, Xtest)
+  
+  # b. Evaluación con restricción POSITIVA
+  passChecks <- getChecks(alpha_hat, mode=c("sum1","pos"))
+  ret <- getRet(alpha_hat, Xtest, passChecks)
+  Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaMVPos, passChecks, Umv)
+  
+  # c. Guardar los resultados
+  results_mv_pos_sweep$Retorno_MVPos[i] <- ret
+  results_mv_pos_sweep$Utilidad_MVPos[i] <- Umv_rel
+}
+
+# 1. Definir el rango de valores de gamma
+# Nota: La utilidad logarítmica suele ser muy sensible, pero usaremos el mismo rango.
+gamma_values <- seq(from = 1, to = 20, length.out = 20) 
+
+# 2. Inicializar un dataframe para guardar los resultados
+results_log_sweep <- data.frame(
+  Gamma = gamma_values,
+  Retorno_Log = numeric(length(gamma_values)),
+  Utilidad_Log = numeric(length(gamma_values)) # Este es el UmvPosInt
+)
+
+# --- Bucle para calcular las métricas ---
+
+for (i in seq_along(gamma_values)) {
+  
+  current_gammaLog <- gamma_values[i]
+  
+  # a. Optimización del portafolio (U_Log sin restricciones de signo)
+  # Usamos gammaLog, getSigmaLog, getAlphaLog (la función con optim/BFGS que permite cortos)
+  alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaLog, getSigmaLog, getAlphaLog, Xtrain, Xtest)
+  
+  # b. Evaluación (solo restricción de suma=1)
+  passChecks <- getChecks(alpha_hat, mode=c("sum1"))
+  ret <- getRet(alpha_hat, Xtest, passChecks)
+  
+  # c. Evaluación de la utilidad Logarítmica
+  # El UmvPosInt utiliza la función de utilidad Logarítmica, no la Umv.
+  # Asumiendo que UmvPosInt es el nombre que le das a la utilidad Logarítmica.
+  Umv_log_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaLog, passChecks, Ulog) # <<< Asumiendo que Ulog es la función de utilidad correcta
+  
+  # d. Guardar los resultados
+  results_log_sweep$Retorno_Log[i] <- ret
+  results_log_sweep$Utilidad_Log[i] <- Umv_log_rel
+}
+
+
+```
+
+```{r}
+# 1. Renombrar y añadir una columna de 'Modelo' a cada dataframe
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# Caso 1: Media-Varianza (MV) con posiciones cortas
+df_mv <- results_mv_sweep %>% 
+  select(Gamma, Retorno_MV, Utilidad_MV) %>% 
+  rename(Retorno = Retorno_MV, Utilidad = Utilidad_MV) %>% 
+  mutate(Modelo = "MV (Con Cortas)")
+
+# Caso 2: Media-Varianza (MV) sin posiciones cortas (Pos)
+df_mv_pos <- results_mv_pos_sweep %>% 
+  select(Gamma, Retorno_MVPos, Utilidad_MVPos) %>% 
+  rename(Retorno = Retorno_MVPos, Utilidad = Utilidad_MVPos) %>% 
+  mutate(Modelo = "MV (Sin Cortas)")
+
+# Caso 3: Log-Utility (Log)
+df_log <- results_log_sweep %>% 
+  select(Gamma, Retorno_Log, Utilidad_Log) %>% 
+  rename(Retorno = Retorno_Log, Utilidad = Utilidad_Log) %>% 
+  mutate(Modelo = "Log-Utility")
+
+# 2. Unir los tres dataframes verticalmente
+full_results <- bind_rows(df_mv, df_mv_pos, df_log)
+
+print(head(full_results))
+```
+```{r}
+# Gráfica de Retorno vs. Gamma
+ggplot(full_results, aes(x = Gamma, y = Retorno, color = Modelo)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  labs(
+    title = "Comparación de Retorno Acumulado vs. Aversión al Riesgo (Gamma)",
+    subtitle = "Tres Modelos de Optimización",
+    x = expression(paste("Aversión al Riesgo (", gamma, ")")),
+    y = "Retorno Acumulado (Test Period)",
+    color = "Modelo"
+  ) +
+  scale_color_brewer(palette = "Set1") + # Usa una paleta de colores distintiva
+  theme_minimal() +
+  # Puedes añadir un zoom si los valores de retLog son mucho más altos
+  # Si retLog domina mucho: scale_y_continuous(limits = c(0, max(full_results$Retorno) * 1.1))
+  geom_vline(xintercept = 1, linetype = "dashed", color = "grey50") # Marca el punto de bajo riesgo
+
+
+# Gráfica de Utilidad vs. Gamma
+ggplot(full_results, aes(x = Gamma, y = Utilidad, color = Modelo)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  labs(
+    title = "Comparación de Utilidad Agregada vs. Aversión al Riesgo (Gamma)",
+    subtitle = "Busqueda de los Parámetros Óptimos de Riesgo",
+    x = expression(paste("Aversión al Riesgo (", gamma, ")")),
+    y = "Utilidad Agregada",
+    color = "Modelo"
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal() +
+  # Añade una línea horizontal en el máximo de utilidad si quieres resaltar el pico
+  # geom_hline(yintercept = max(full_results$Utilidad), linetype = "dotted", color = "red")
+  geom_vline(xintercept = 1, linetype = "dashed", color = "grey50")
+
+```
+```{r}
+df_mv_combined <- bind_rows(df_mv, df_mv_pos)
+
+# 1. Utilidad MV (Zoom en escala)
+ggplot(df_mv_combined, aes(x = Gamma, y = Utilidad, color = Modelo)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  labs(title = "Utilidad (MV) vs. Gamma: Comparación con/sin Cortas",
+       x = expression(paste("Aversión al Riesgo (", gamma, ")")),
+       y = "Utilidad Agregada") +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal()
+
+# 2. Retorno MV (Zoom en escala)
+ggplot(df_mv_combined, aes(x = Gamma, y = Retorno, color = Modelo)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  labs(title = "Retorno (MV) vs. Gamma: Comparación con/sin Cortas",
+       x = expression(paste("Aversión al Riesgo (", gamma, ")")),
+       y = "Retorno Acumulado") +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal()
+```
+
