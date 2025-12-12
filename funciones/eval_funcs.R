@@ -48,11 +48,11 @@ getAlpha_ts <- function(mus, sigs, gamma, getSigmaFunc, getAlphaFunc, Xtrain, Xt
 getChecks <- function(alpha_hat, mode=c("sum1","pos","int")){
   passChecks <- TRUE
   if(("sum1" %in% mode) & passChecks){
-    print("sum1 check")
+    #print("sum1 check")
     passChecks <- all( (apply(alpha_hat, 1, sum)-1) <1e-6)
   }
   if(("pos" %in% mode) & passChecks){
-    print("pos check")
+    #print("pos check")
     passChecks <- all(alpha_hat>=-10e-14)
   }
   if( ("int" %in% mode) & passChecks){

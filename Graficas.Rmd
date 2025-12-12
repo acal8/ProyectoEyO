@@ -1,52 +1,78 @@
 ---
 title: "graficas"
-author: "Javier Herrero Pérez"
+author: "nombre"
+
 date: "2025-12-09"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
 
-```{r pressure, echo=FALSE}
+
+
+
+
+
+
+
+
+
+
+# Organización del trabajo
+
+El trabajo se ha organizado entre los miembros del grupo de la siguiente manera:
+
+- Javier Herrero Pérez: Apartado 2 y 3.1
+
+- Clara Montalvá Barcenilla:
+
+- Adrián Carrasco Alcala:
+
+
+
+# Apartado 2
+
+```{r pressure, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 source("solucion_XXX.R", echo = F)
 ```
-```{r}
-evals
-```
+La optimización de la cartera en cada periodo t requiere estimaciones del rendimiento esperado $\mu_t$ y de la matriz de covarianza $\Sigma_t$ para los $N=5$ activos. Para ello, se utilizo un enfoque de modelos de series temporales aplicando modelos autoregresivos ARIMA. Para cada uno de los cinco activos se ha adoptado un modelo ARIMA y se ha ido estudiando los valores a partir del onestep. Los datos que se disponen estan formado por 10 años (120 periodos), se ha decidido entrenar con 8 años y los otros 2 años como valores de test. La figura anterior permite evaluar la calidad del modelo de predicción ARIMA en el periodo de prueba. La gráfica muestra la comparación de los rendimientos reales frente a los rendimientos pronosticados para un solo acivo durante el periodo de prueba. Se observa que aunque la amplitud no sea perfecta, s´ique es capaz de captar correctamente cuando sube y cuando baja.
 
+El resultado del RMSE promedio es del 0.0175 ($1.75\%$) en el pronóstico de los 5 activos. Dado el comportamiento ruidoso de las series este resultado indica que el modelo ARIMA ha lorgrado capturar la componente predecible de la señal. La magnitud del error se debe principalmente a la componente impredecible. 
 
-```{r,echo=F}
-# 1. Definir el rango de valores de gamma
-# Podemos usar una secuencia lineal, por ejemplo, 20 puntos de 1 a 20.
-gamma_values <- seq(from = 1, to = 20, length.out = 20) 
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 
-# 2. Inicializar un dataframe para guardar los resultados
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(patchwork)
+
+gamma_values <- seq(from = 2, to = 20, length.out = 20) 
+
 results_mv_sweep <- data.frame(
   Gamma = gamma_values,
   Retorno_MV = numeric(length(gamma_values)),
   Utilidad_MV = numeric(length(gamma_values))
 )
 
-# --- 3. Bucle para calcular las métricas ---
-
-# Asegúrate de que mu_hat, se_hat, Xtrain, Xtest y las funciones
-# getSigmaMV, getAlphaMV, getChecks, getRet, getUEval estén definidas previamente.
 
 for (i in seq_along(gamma_values)) {
   
-  # a. Asignar el gamma actual para la iteración
+
   current_gammaMV <- gamma_values[i]
   
-  # b. Optimización del portafolio (cálculo de pesos)
-alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaMV, getSigmaMV, getAlphaMV, Xtrain, Xtest)
-passChecks <- getChecks(alpha_hat, mode="sum1")
-ret <- getRet(alpha_hat, Xtest, passChecks)
-evals <- c(evals, retMV=ret)
-Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaMV, getSigmaMV, passChecks, Umv)
-evals <- c(evals,  Umv=Umv_rel)
+
+  alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaMV, getSigmaMV, getAlphaMV, Xtrain, Xtest)
+  passChecks <- getChecks(alpha_hat, mode="sum1")
+  ret <- getRet(alpha_hat, Xtest, passChecks)
+  evals <- c(evals, retMV=ret)
+  Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaMV, getSigmaMV, passChecks, Umv)
+  evals <- c(evals,  Umv=Umv_rel)
   
   # d. Guardar los resultados
   results_mv_sweep$Retorno_MV[i] <- ret
@@ -54,8 +80,8 @@ evals <- c(evals,  Umv=Umv_rel)
 }
 
 
-# 1. Definir el rango de valores de gamma
-gamma_values <- seq(from = 1, to = 20, length.out = 20) 
+
+gamma_values <- seq(from = 2, to = 20, length.out = 20) 
 
 # 2. Inicializar un dataframe para guardar los resultados
 results_mv_pos_sweep <- data.frame(
@@ -64,14 +90,13 @@ results_mv_pos_sweep <- data.frame(
   Utilidad_MVPos = numeric(length(gamma_values))
 )
 
-# --- Bucle para calcular las métricas ---
+
 
 for (i in seq_along(gamma_values)) {
   
   current_gammaMVPos <- gamma_values[i]
   
-  # a. Optimización del portafolio (U_MV con restricción POS)
-  # Usamos gammaMVPos, getSigmaMVPos, getAlphaMVPos y passChecks mode="pos"
+
   alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaMVPos, getSigmaMVPos, getAlphaMVPos, Xtrain, Xtest)
   passChecks <- getChecks(alpha_hat, mode=c("sum1","pos"))
   ret <- getRet(alpha_hat, Xtest, passChecks)
@@ -79,146 +104,72 @@ for (i in seq_along(gamma_values)) {
   Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaMVPos, getSigmaMVPos, passChecks, Umv)
   evals <- c(evals,  UmvPos=Umv_rel)
   
-  # c. Guardar los resultados
+
   results_mv_pos_sweep$Retorno_MVPos[i] <- ret
   results_mv_pos_sweep$Utilidad_MVPos[i] <- Umv_rel
 }
 
-# 1. Definir el rango de valores de gamma
-# Nota: La utilidad logarítmica suele ser muy sensible, pero usaremos el mismo rango.
-gamma_values <- seq(from = 1, to = 20, length.out = 20) 
 
-# 2. Inicializar un dataframe para guardar los resultados
+gamma_values <- seq(from = 2, to = 20, length.out = 20) 
+
+
 results_log_sweep <- data.frame(
   Gamma = gamma_values,
   Retorno_Log = numeric(length(gamma_values)),
   Utilidad_Log = numeric(length(gamma_values)) # Este es el UmvPosInt
 )
 
-# --- Bucle para calcular las métricas ---
+
 
 for (i in seq_along(gamma_values)) {
   
   current_gammaLog <- gamma_values[i]
   
-  # a. Optimización del portafolio (U_Log sin restricciones de signo)
-  # Usamos gammaLog, getSigmaLog, getAlphaLog (la función con optim/BFGS que permite cortos)
+
   alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaLog, getSigmaLog, getAlphaLog, Xtrain, Xtest)
   passChecks <- getChecks(alpha_hat, mode=c("sum1"))
   ret <- getRet(alpha_hat, Xtest, passChecks)
   evals <- c(evals, retLog=ret)
   Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaLog, getSigmaLog, passChecks, Umv)
   
-  # d. Guardar los resultados
   results_log_sweep$Retorno_Log[i] <- ret
   results_log_sweep$Utilidad_Log[i] <- Umv_rel
 }
 
 
-```
 
-```{r}
-# 1. Renombrar y añadir una columna de 'Modelo' a cada dataframe
-library(dplyr)
-library(tidyr)
-library(ggplot2)
 
-# Caso 1: Media-Varianza (MV) con posiciones cortas
 df_mv <- results_mv_sweep %>% 
   select(Gamma, Retorno_MV, Utilidad_MV) %>% 
   rename(Retorno = Retorno_MV, Utilidad = Utilidad_MV) %>% 
   mutate(Modelo = "MV (Con Cortas)")
 
-# Caso 2: Media-Varianza (MV) sin posiciones cortas (Pos)
+
 df_mv_pos <- results_mv_pos_sweep %>% 
   select(Gamma, Retorno_MVPos, Utilidad_MVPos) %>% 
   rename(Retorno = Retorno_MVPos, Utilidad = Utilidad_MVPos) %>% 
   mutate(Modelo = "MV (Sin Cortas)")
 
-# Caso 3: Log-Utility (Log)
 df_log <- results_log_sweep %>% 
   select(Gamma, Retorno_Log, Utilidad_Log) %>% 
   rename(Retorno = Retorno_Log, Utilidad = Utilidad_Log) %>% 
   mutate(Modelo = "Log-Utility")
 
-# 2. Unir los tres dataframes verticalmente
-full_results <- bind_rows(df_mv, df_mv_pos, df_log)
-
-print(head(full_results))
-```
-```{r}
-# Gráfica de Retorno vs. Gamma
-ggplot(full_results, aes(x = Gamma, y = Retorno, color = Modelo)) +
-  geom_line(size = 1.2) +
-  geom_point(size = 3) +
-  labs(
-    title = "Comparación de Retorno Acumulado vs. Aversión al Riesgo (Gamma)",
-    subtitle = "Tres Modelos de Optimización",
-    x = expression(paste("Aversión al Riesgo (", gamma, ")")),
-    y = "Retorno Acumulado (Test Period)",
-    color = "Modelo"
-  ) +
-  scale_color_brewer(palette = "Set1") + # Usa una paleta de colores distintiva
-  theme_minimal() +
-  # Puedes añadir un zoom si los valores de retLog son mucho más altos
-  # Si retLog domina mucho: scale_y_continuous(limits = c(0, max(full_results$Retorno) * 1.1))
-  geom_vline(xintercept = 1, linetype = "dashed", color = "grey50") # Marca el punto de bajo riesgo
-
-
-# Gráfica de Utilidad vs. Gamma
-ggplot(full_results, aes(x = Gamma, y = Utilidad, color = Modelo)) +
-  geom_line(size = 1.2) +
-  geom_point(size = 3) +
-  labs(
-    title = "Comparación de Utilidad Agregada vs. Aversión al Riesgo (Gamma)",
-    subtitle = "Busqueda de los Parámetros Óptimos de Riesgo",
-    x = expression(paste("Aversión al Riesgo (", gamma, ")")),
-    y = "Utilidad Agregada",
-    color = "Modelo"
-  ) +
-  scale_color_brewer(palette = "Set1") +
-  theme_minimal() +
-  # Añade una línea horizontal en el máximo de utilidad si quieres resaltar el pico
-  # geom_hline(yintercept = max(full_results$Utilidad), linetype = "dotted", color = "red")
-  geom_vline(xintercept = 1, linetype = "dashed", color = "grey50")
-
-```
-```{r}
-df_mv_combined <- bind_rows(df_mv, df_mv_pos)
-
-# 1. Utilidad MV (Zoom en escala)
-ggplot(df_mv_combined, aes(x = Gamma, y = Utilidad, color = Modelo)) +
-  geom_line(size = 1.2) +
-  geom_point(size = 3) +
-  labs(title = "Utilidad (MV) vs. Gamma: Comparación con/sin Cortas",
-       x = expression(paste("Aversión al Riesgo (", gamma, ")")),
-       y = "Utilidad Agregada") +
-  scale_color_brewer(palette = "Set1") +
-  theme_minimal()
-
-# 2. Retorno MV (Zoom en escala)
-ggplot(df_mv_combined, aes(x = Gamma, y = Retorno, color = Modelo)) +
-  geom_line(size = 1.2) +
-  geom_point(size = 3) +
-  labs(title = "Retorno (MV) vs. Gamma: Comparación con/sin Cortas",
-       x = expression(paste("Aversión al Riesgo (", gamma, ")")),
-       y = "Retorno Acumulado") +
-  scale_color_brewer(palette = "Set1") +
-  theme_minimal()
 ```
 
-# Apartado 2 y 3.1
 
-## Apartado 3.1
 
-La función a optimizar es 
-$$U_{MV}(\alpha_t,\gamma;\mu_t,\Sigma_t)=\alpha_t^T \mu_t-\frac{\gamma}{2}\alpha_t^T \sum_t \alpha$$
 
-La función $U_{MV}$ se maximiza, esto equivale a minimizar $-U_{MV}$ sujeto a la restricción $\sum \alpha_t=1$. Entonces el problema que hay que resolver es el siguiente:
+# Apartado 3.1
+
+La función de utilidad media-variana es
+$U_{MV}(\alpha_t,\gamma;\mu_t,\Sigma_t)=\alpha_t^T \mu_t-\frac{\gamma}{2}\alpha_t^T \sum_t \alpha$.
+
+Esta función se maximiza, esto equivale a minimizar $-U_{MV}$ sujeto a la restricción $\sum \alpha_t=1$. Se trata de un problema de programación cuadrática sin restricciones de desigualdad, entonces el problema a resolver es el siguiente:
 
 $$Min\{ \frac{\gamma}{2} \alpha_t^T \sum_t \alpha_t - \alpha_t^T \mu_t\} \ \ \text{s.a} \sum \alpha_t=1$$
 
-En este caso se puede obtener el valor óptimo de $\alpha$ de manera teórica utilizando multiplicadores de Lagrange. Se define el Lagrangiano $L$ como
+En este caso, donde se permiten las posiciones cortas, la solución óptima $\alpha^*$ se puede obtener de manera teórica mediante el uso de multiplicadores de Lagrange. Se define el Lagrangiano $L$ de la siguiente forma:
 
 $$L=\frac{\gamma}{2} \alpha_t^T \sum_t \alpha_t - \alpha_t^T \mu_t + \lambda(\textbf{1}^T\cdot \alpha-1)$$
 donde $\textbf{1}^T$ es un vector columna de 1 con N filas, donde N es el número de activos que en este problema es 5. Se resuelve el sistema:
@@ -232,13 +183,51 @@ Sustituyendo se obtiene lo siguientes resultados:
 $$\lambda^*=\frac{\textbf{1}^T\Sigma^{-1}\mu-\gamma}{\textbf{1}^T\Sigma^{-1}\textbf{1}}$$
 $$\alpha^*=\frac{1}{\gamma}\Sigma^{-1}(\mu-\lambda^*\textbf{1})$$
 
-De esta forma se puede obtener de manera exacta la solución.
+Esta solución análisita se implementa directamente en la función **getAlphaMV**, lo que permite obtener el valor exacto de la asignación del portafolio $\alpha$. 
+
+Para implementar la solución es necesario obtener la matriz de covarianza $\Sigma_t$ que se ha calculado previamente en **getSigmaMV**, este enfoque justifica el uso de los modelos ARIMA para la volatilidd (elementos diagonales de $\Sigma_t$) mientra que la dependencia entre los activos se saca de la historia de los datos.
 
 ```{r}
-df_mv <- results_mv_sweep %>% 
-  select(Gamma, Retorno_MV, Utilidad_MV) %>% 
-  rename(Retorno = Retorno_MV, Utilidad = Utilidad_MV) %>% 
-  mutate(Modelo = "MV (Con Cortas)")
+
+plot_retorno <- ggplot(df_mv, aes(x = Gamma, y = Retorno)) +
+geom_line(size = 1.2) +
+geom_point(size = 3) +
+labs(
+title = "Retorno Acumulado vs. Aversión al Riesgo",
+x = expression(paste("Aversión al Riesgo (", gamma, ")")),
+ y = "Retorno Acumulado"
+) +
+theme_minimal()+theme(plot.title = element_text(size = 12))
+
+# 2. Gráfica de Utilidad Agregada
+plot_utilidad <- ggplot(df_mv, aes(x = Gamma, y = Utilidad)) +
+geom_line(size = 1.2) +
+geom_point(size = 3) +
+labs(
+title = "Utilidad Agregada vs. Aversión al Riesgo",
+ x = expression(paste("Aversión al Riesgo (", gamma, ")")),
+y = "Utilidad Agregada"
+) +
+theme_minimal()+theme(plot.title = element_text(size = 12))
+
+# Combinar las dos gráficas una al lado de la otra
+plot_retorno | plot_utilidad
 
 ```
 
+La gráfica muestra la relación entre el retorno acumulado y el parámetro de riesgo $\gamma$. El comportamiento genera que se observa es que el retorno cae drásticamente a medida que $\gamma$ aumenta hasta que se estabiliza. Tomar un valor pequeño de $\gamma$ conlleva tomar mucho riesgo, provocando un mayor retorno acumulado. 
+
+- Riesgo mínimo: Elegir valores altos como $\gamma=20$ significa priorizar la minimización extrema del riesgo. Aunque esto resulta en cartera más segura, se observa que se penaliza excesivamente el rendimiento, logrando un retorno acumulado de $295\%$ y una utilidad promedio de $Y_{MV}=7.011$
+
+- Balance óptimo: Si se busca un balance eficiente entre riesgo y retornoel valor de $\gamma=5$ es un punto destacable en la curva de la gráfica. Este valor impone un riesgo considerabley un retorno grande $9107\%$ lo que resulta en una utilidad agregada mucho mayor $U_{MV}=22.88$
+
+
+Elegir valores $\gamma<5$ conllevarían un riesgo mucho mayor y a su vez un rendimiento elevado, si se busca un equilibrio entre rendimiento y seguridad el valor de $\gamma=5$ sería adecuado, pero si se busca maximizar el retorno el valor de $\gamma=1$ sería el adecuado.
+
+Como Conclusión se elige $\gamma=5$ como el valor de riesgo ya que busca un rendimiento alto mientras que mantiene el riesgo bajo control según la curva mostrada.
+
+# Resultados
+
+```{r}
+evals
+```
