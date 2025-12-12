@@ -1,8 +1,8 @@
 ---
-title: "graficas"
-author: "nombre"
-
-date: "2025-12-09"
+title: "Proyecto Estadística y Optimización"
+subtitle: "Máster en Ciencia de Datos - UV"
+author: "Adrián Carrasco Alcalá, Javier Herrero Pérez y Clara Montalvá Barcenilla"
+date: "Curso 2025-2026"
 output:
   pdf_document: default
   html_document: default
