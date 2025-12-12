@@ -10,10 +10,10 @@ dir()
 # MODIFICAR DESDE AQUI...
 
 
-teamName <- "????"
-# integrante 1: 
-# integrante 2:
-# integrante 3:
+teamName <- "Pichones"
+# integrante 1: Adrián Carrasco Alcalá
+# integrante 2: Javier Herrero Pérez
+# integrante 3: Clara Montalvá Barcenilla
 
 ##########################
 # seccion 2 - predicciones
