@@ -53,12 +53,12 @@ for (i in seq_along(gamma_values)) {
   current_gammaMV <- gamma_values[i]
   
   # b. Optimización del portafolio (cálculo de pesos)
-  alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaMV, getSigmaMV, getAlphaMV, Xtrain, Xtest)
-  
-  # c. Evaluación
-  passChecks <- getChecks(alpha_hat, mode="sum1")
-  ret <- getRet(alpha_hat, Xtest, passChecks)
-  Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaMV, passChecks, Umv)
+alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaMV, getSigmaMV, getAlphaMV, Xtrain, Xtest)
+passChecks <- getChecks(alpha_hat, mode="sum1")
+ret <- getRet(alpha_hat, Xtest, passChecks)
+evals <- c(evals, retMV=ret)
+Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaMV, getSigmaMV, passChecks, Umv)
+evals <- c(evals,  Umv=Umv_rel)
   
   # d. Guardar los resultados
   results_mv_sweep$Retorno_MV[i] <- ret
@@ -85,11 +85,11 @@ for (i in seq_along(gamma_values)) {
   # a. Optimización del portafolio (U_MV con restricción POS)
   # Usamos gammaMVPos, getSigmaMVPos, getAlphaMVPos y passChecks mode="pos"
   alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaMVPos, getSigmaMVPos, getAlphaMVPos, Xtrain, Xtest)
-  
-  # b. Evaluación con restricción POSITIVA
   passChecks <- getChecks(alpha_hat, mode=c("sum1","pos"))
   ret <- getRet(alpha_hat, Xtest, passChecks)
-  Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaMVPos, passChecks, Umv)
+  evals <- c(evals, retMVPos=ret)
+  Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaMVPos, getSigmaMVPos, passChecks, Umv)
+  evals <- c(evals,  UmvPos=Umv_rel)
   
   # c. Guardar los resultados
   results_mv_pos_sweep$Retorno_MVPos[i] <- ret
@@ -223,4 +223,31 @@ ggplot(df_mv_combined, aes(x = Gamma, y = Retorno, color = Modelo)) +
   scale_color_brewer(palette = "Set1") +
   theme_minimal()
 ```
+
+# Apartado 2 y 3.1
+
+## Apartado 3.1
+
+La función a optimizar es 
+$$U_{MV}(\alpha_t,\gamma;\mu_t,\Sigma_t)=\alpha_t^T \mu_t-\frac{\gamma}{2}\alpha_t^T \sum_t \alpha$$
+
+La función $U_{MV}$ se maximiza, esto equivale a minimizar $-U_{MV}$ sujeto a la restricción $\sum \alpha_t=1$. Entonces el problema que hay que resolver es el siguiente:
+
+$$Min\{ \frac{\gamma}{2} \alpha_t^T \sum_t \alpha_t - \alpha_t^T \mu_t\} \ \ \text{s.a} \sum \alpha_t=1$$
+
+En este caso se puede obtener el valor óptimo de $\alpha$ de manera teórica utilizando multiplicadores de Lagrange. Se define el Lagrangiano $L$ como
+
+$$L=\frac{\gamma}{2} \alpha_t^T \sum_t \alpha_t - \alpha_t^T \mu_t + \lambda(\textbf{1}^T\cdot \alpha-1)$$
+donde $\textbf{1}^T$ es un vector columna de 1 con N filas, donde N es el número de activos que en este problema es 5. Se resuelve el sistema:
+
+$$\frac{\partial L}{\partial \alpha}=\gamma \Sigma \alpha^*-\mu+\lambda^* \textbf{1}=0$$
+$$\frac{\partial L}{\partial \lambda}=\textbf{1}^T \alpha^*-1=0$$
+donde $\alpha^*$, $\lambda^*$ las soluciones del sistema.
+
+Sustituyendo se obtiene lo siguientes resultados:
+
+$$\lambda^*=\frac{\textbf{1}^T\Sigma^{-1}\mu-\gamma}{\textbf{1}^T\Sigma^{-1}\textbf{1}}$$
+$$\alpha^*=\frac{1}{\gamma}\Sigma^{-1}(\mu-\lambda^*\textbf{1})$$
+
+De esta forma se puede obtener de manera exacta 
 
