@@ -4,8 +4,8 @@ subtitle: "Máster en Ciencia de Datos - UV"
 author: "Adrián Carrasco Alcalá, Javier Herrero Pérez y Clara Montalvá Barcenilla"
 date: "Curso 2025-2026"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -38,15 +38,8 @@ El trabajo se ha dividido entre los miembros del grupo de la siguiente manera:
 
 # Apartado 2
 
-```{r pressure, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
-source("solucion_XXX.R", echo = F)
-```
-
 ```{r pressure, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=6, fig.height=3}
-i <- 2
-plot(as.data.frame(Xtest)[,i], ty="l", xlab = 'Tiempo (años)', ylab = 'Rendimiento')
-lines(mu_hat[,i], col="blue", ty="l")
-
+source("solucion_XXX.R", echo = F)
 ```
 
 
