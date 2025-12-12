@@ -38,7 +38,7 @@ El trabajo se ha organizado entre los miembros del grupo de la siguiente manera:
 
 # Apartado 2
 
-```{r pressure, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+```{r pressure, echo=FALSE, message=FALSE, warning=FALSE, results='hide',fig.width=6, fig.height=3}
 source("solucion_XXX.R", echo = F)
 ```
 La optimización de la cartera en cada periodo t requiere estimaciones del rendimiento esperado $\mu_t$ y de la matriz de covarianza $\Sigma_t$ para los $N=5$ activos. Para ello, se utilizo un enfoque de modelos de series temporales aplicando modelos autoregresivos ARIMA. Para cada uno de los cinco activos se ha adoptado un modelo ARIMA y se ha ido estudiando los valores a partir del onestep. Los datos que se disponen estan formado por 10 años (120 periodos), se ha decidido entrenar con 8 años y los otros 2 años como valores de test. La figura anterior permite evaluar la calidad del modelo de predicción ARIMA en el periodo de prueba. La gráfica muestra la comparación de los rendimientos reales frente a los rendimientos pronosticados para un solo acivo durante el periodo de prueba. Se observa que aunque la amplitud no sea perfecta, s´ique es capaz de captar correctamente cuando sube y cuando baja.
@@ -187,7 +187,7 @@ Esta solución análisita se implementa directamente en la función **getAlphaMV
 
 Para implementar la solución es necesario obtener la matriz de covarianza $\Sigma_t$ que se ha calculado previamente en **getSigmaMV**, este enfoque justifica el uso de los modelos ARIMA para la volatilidd (elementos diagonales de $\Sigma_t$) mientra que la dependencia entre los activos se saca de la historia de los datos.
 
-```{r}
+```{r,fig.width=8, fig.height=3}
 
 plot_retorno <- ggplot(df_mv, aes(x = Gamma, y = Retorno)) +
 geom_line(size = 1.2) +

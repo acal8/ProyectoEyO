@@ -54,7 +54,7 @@ getPred <- function(x_train, x_test_past){
 ###########################################################
 # 3.1 utilidad media-varianza, alfa_i positiva o negativa
 ###########################################################
-gammaMV <- 20#INSERTAR VALOR EN REALES 
+gammaMV <- 5#INSERTAR VALOR EN REALES 
 
 # Funcion para estimar la matriz de covarianzas entre los rendimientos de los 5
 # activos a partir de las desviaciones estándares (que vendran de su modelo Arima)
