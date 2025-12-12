@@ -281,7 +281,7 @@ alpha_hat <- getAlpha_ts(mu_hat, se_hat, gammaMV, getSigmaMV, getAlphaMV, Xtrain
 passChecks <- getChecks(alpha_hat, mode="sum1")
 ret <- getRet(alpha_hat, Xtest, passChecks)
 evals <- c(evals, retMV=ret)
-Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaMV, passChecks, Umv)
+Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaMV, getSigmaMV, passChecks, Umv)
 evals <- c(evals,  Umv=Umv_rel)
 
 # utilidad media-varianza, alfa_i positiva 
@@ -290,17 +290,8 @@ alpha_hat <- getAlpha_ts(mu_hat, se_hat, gammaMVPos, getSigmaMVPos, getAlphaMVPo
 passChecks <- getChecks(alpha_hat, mode=c("sum1","pos"))
 ret <- getRet(alpha_hat, Xtest, passChecks)
 evals <- c(evals, retMVPos=ret)
-Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaMVPos, passChecks, Umv)
+Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaMVPos, getSigmaMVPos, passChecks, Umv)
 evals <- c(evals,  UmvPos=Umv_rel)
-
-# utilidad media-varianza, alfa_i positiva y entera/5
-
-# alpha_hat <- getAlpha_ts(mu_hat, se_hat, gammaMVPosInt, getSigmaMVPosInt, getAlphaMVPosInt, Xtrain, Xtest)
-# passChecks <- getChecks(alpha_hat, mode=c("sum1","pos","int"))
-# ret <- getRet(alpha_hat, Xtest, passChecks)
-# evals <- c(evals, retMVPosInt=ret)
-# Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaMVPosInt, passChecks, Umv)
-# evals <- c(evals,  UmvPosInt=Umv_rel)
 
 
 # seccion 4 - 
@@ -310,7 +301,7 @@ alpha_hat <- getAlpha_ts(mu_hat, se_hat, gammaLog, getSigmaLog, getAlphaLog, Xtr
 passChecks <- getChecks(alpha_hat, mode=c("sum1"))
 ret <- getRet(alpha_hat, Xtest, passChecks)
 evals <- c(evals, retLog=ret)
-Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaLog, passChecks, Umv)
+Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaLog, getSigmaLog, passChecks, Umv)
 evals <- c(evals,  UmvPosInt=Umv_rel)
 
 evals

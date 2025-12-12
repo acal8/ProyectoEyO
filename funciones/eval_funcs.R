@@ -1,4 +1,5 @@
 # funciones para evaluar resultados de sus soluciones
+library(forecast)
 
 # aplicar funcion de prediccion getPredFunc recursivamente
 getPred_ts<- function(Xtrain, Xtest, getPredFunc){
@@ -9,6 +10,7 @@ getPred_ts<- function(Xtrain, Xtest, getPredFunc){
   
 
   X_test_past <- Xtest[0,]
+  print(paste("dim X test past: ", dim(X_test_past)))
   for (h in seq_len(H)) {
     for (i in 1:5){
       # update model state with data up to t-1 (parameters fixed)
@@ -51,7 +53,7 @@ getChecks <- function(alpha_hat, mode=c("sum1","pos","int")){
   }
   if(("pos" %in% mode) & passChecks){
     print("pos check")
-    passChecks <- all(alpha_hat>=0)
+    passChecks <- all(alpha_hat>=-10e-14)
   }
   if( ("int" %in% mode) & passChecks){
     passChecks <- sapply(seq(0,5)/5, function(i) abs(alpha_hat-i) < 1e-6, simplify="array")
@@ -79,7 +81,7 @@ Ulog <- function(alpha, gamma, mu_hat, Sigma_hat){
   Er <- sum(alpha*mu_hat)
   logTerm <- log(1+Er)
   riskTerm <- (t(alpha)%*%Sigma_hat%*%alpha)[1,1] / (1+Er)^2
-  res <- logTerm -0.5*riskTerm
+  res <- logTerm -(gamma/2)*riskTerm
   
   return(res)
 }
@@ -95,11 +97,11 @@ getAlphaEqual <- function(mu,Sigma, gamma){
 
 # funcion para evaluar la calidad de las utilidades obtenidas segun la funcion de utilidad y en comparacion
 # a ls solucion "getAlphaEqual"
-getUEval <- function(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gamma, passChecks, Ufunc){
+getUEval <- function(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gamma, getSigma, passChecks, Ufunc){
   if(!passChecks) return(NA)
-  U_val <- mean(sapply(1:nrow(alpha_hat), function(i) do.call(Ufunc, list(alpha_hat[i,],gamma, mu_hat[i,], getSigmaDiag(se_hat[i,], Xtrain)))))
-  alpha_hat_ref <- getAlpha_ts(mu_hat, se_hat, gamma, getSigmaDiag, getAlphaEqual, Xtrain, Xtest)
-  U_ref <- mean(sapply(1:nrow(alpha_hat), function(i) do.call(Ufunc, list(alpha_hat_ref[i,], gamma, mu_hat[i,], getSigmaDiag(se_hat[i,], Xtrain)))))
+  U_val <- mean(sapply(1:nrow(alpha_hat), function(i) do.call(Ufunc, list(alpha_hat[i,],gamma, mu_hat[i,], getSigma(se_hat[i,], Xtrain)))))
+  alpha_hat_ref <- getAlpha_ts(mu_hat, se_hat, gamma, getSigma, getAlphaEqual, Xtrain, Xtest)
+  U_ref <- mean(sapply(1:nrow(alpha_hat), function(i) do.call(Ufunc, list(alpha_hat_ref[i,], gamma, mu_hat[i,], getSigma(se_hat[i,], Xtrain)))))
   U_rel <-  (U_val-U_ref)/abs(U_ref)
   return(U_rel)
 }
