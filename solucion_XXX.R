@@ -10,10 +10,10 @@ dir()
 # MODIFICAR DESDE AQUI...
 
 
-teamName <- "????"
-# integrante 1: 
-# integrante 2:
-# integrante 3:
+teamName <- "Pichones"
+# integrante 1: Adrián Carrasco Alcalá
+# integrante 2: Javier Herrero Pérez
+# integrante 3: Clara Montalvá Barcenilla
 
 ##########################
 # seccion 2 - predicciones
@@ -264,9 +264,9 @@ mu_hat = res$mu_hat
 se_hat = res$se_hat
 
 # MAPE
-i <- 2
-plot(as.data.frame(Xtest)[,i], ty="l")
-lines(mu_hat[,i], col="blue", ty="l")
+#i <- 2
+#plot(as.data.frame(Xtest)[,i], ty="l")
+#lines(mu_hat[,i], col="blue", ty="l")
 
 
 
