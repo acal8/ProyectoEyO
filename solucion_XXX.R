@@ -264,9 +264,9 @@ mu_hat = res$mu_hat
 se_hat = res$se_hat
 
 # MAPE
-i <- 2
-plot(as.data.frame(Xtest)[,i], ty="l")
-lines(mu_hat[,i], col="blue", ty="l")
+#i <- 2
+#plot(as.data.frame(Xtest)[,i], ty="l")
+#lines(mu_hat[,i], col="blue", ty="l")
 
 
 
