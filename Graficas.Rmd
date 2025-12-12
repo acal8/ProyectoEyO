@@ -26,13 +26,13 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 # Organización del trabajo
 
-El trabajo se ha organizado entre los miembros del grupo de la siguiente manera:
+El trabajo se ha dividido entre los miembros del grupo de la siguiente manera:
 
 - Javier Herrero Pérez: Apartado 2 y 3.1
 
-- Clara Montalvá Barcenilla:
+- Clara Montalvá Barcenilla: Apartado 3.2
 
-- Adrián Carrasco Alcala:
+- Adrián Carrasco Alcalá: Apartado 4
 
 
 
@@ -41,7 +41,8 @@ El trabajo se ha organizado entre los miembros del grupo de la siguiente manera:
 ```{r pressure, echo=FALSE, message=FALSE, warning=FALSE, results='hide',fig.width=6, fig.height=3}
 source("solucion_XXX.R", echo = F)
 ```
-La optimización de la cartera en cada periodo t requiere estimaciones del rendimiento esperado $\mu_t$ y de la matriz de covarianza $\Sigma_t$ para los $N=5$ activos. Para ello, se utilizo un enfoque de modelos de series temporales aplicando modelos autoregresivos ARIMA. Para cada uno de los cinco activos se ha adoptado un modelo ARIMA y se ha ido estudiando los valores a partir del onestep. Los datos que se disponen estan formado por 10 años (120 periodos), se ha decidido entrenar con 8 años y los otros 2 años como valores de test. La figura anterior permite evaluar la calidad del modelo de predicción ARIMA en el periodo de prueba. La gráfica muestra la comparación de los rendimientos reales frente a los rendimientos pronosticados para un solo acivo durante el periodo de prueba. Se observa que aunque la amplitud no sea perfecta, s´ique es capaz de captar correctamente cuando sube y cuando baja.
+
+La optimización de la cartera en cada periodo $t$ requiere estimaciones del rendimiento esperado $\mu_t$ y de la matriz de covarianza $\Sigma_t$ para los $N=5$ activos. Para ello, se utilizó un enfoque de modelos de series temporales aplicando modelos autoregresivos ARIMA. Para cada uno de los cinco activos se ha adoptado un modelo ARIMA y se han ido estudiando los valores a partir del onestep. Los datos de los que disponemos están formados por 10 años (120 periodos), se ha decidido entrenar con 8 años y los otros 2 años como valores de test. La figura anterior permite evaluar la calidad del modelo de predicción ARIMA en el periodo de prueba. La gráfica muestra la comparación de los rendimientos reales frente a los rendimientos pronosticados para un solo acivo durante el periodo de prueba. Se observa que aunque la amplitud no sea perfecta, sí que es capaz de captar correctamente cuando sube y cuando baja.
 
 El resultado del RMSE promedio es del 0.0175 ($1.75\%$) en el pronóstico de los 5 activos. Dado el comportamiento ruidoso de las series este resultado indica que el modelo ARIMA ha lorgrado capturar la componente predecible de la señal. La magnitud del error se debe principalmente a la componente impredecible. 
 
@@ -167,7 +168,7 @@ $U_{MV}(\alpha_t,\gamma;\mu_t,\Sigma_t)=\alpha_t^T \mu_t-\frac{\gamma}{2}\alpha_
 
 Esta función se maximiza, esto equivale a minimizar $-U_{MV}$ sujeto a la restricción $\sum \alpha_t=1$. Se trata de un problema de programación cuadrática sin restricciones de desigualdad, entonces el problema a resolver es el siguiente:
 
-$$Min\{ \frac{\gamma}{2} \alpha_t^T \sum_t \alpha_t - \alpha_t^T \mu_t\} \ \ \text{s.a} \sum \alpha_t=1$$
+$$Min\{ \frac{\gamma}{2} \alpha_t^T \sum_t \alpha_t - \alpha_t^T \mu_t\} \hspace{3mm} \text{s.a} \hspace{1mm} \sum \alpha_t=1$$
 
 En este caso, donde se permiten las posiciones cortas, la solución óptima $\alpha^*$ se puede obtener de manera teórica mediante el uso de multiplicadores de Lagrange. Se define el Lagrangiano $L$ de la siguiente forma:
 
