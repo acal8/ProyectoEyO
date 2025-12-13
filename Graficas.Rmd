@@ -186,7 +186,7 @@ Sustituyendo se obtiene lo siguientes resultados:
 $$\lambda^*=\frac{\textbf{1}^T\Sigma^{-1}\mu-\gamma}{\textbf{1}^T\Sigma^{-1}\textbf{1}}$$
 $$\alpha^*=\frac{1}{\gamma}\Sigma^{-1}(\mu-\lambda^*\textbf{1})$$
 
-Esta solución análisita se implementa directamente en la función **getAlphaMV**, lo que permite obtener el valor exacto de la asignación del portafolio $\alpha$. 
+Esta solución analítica se implementa directamente en la función **getAlphaMV**, lo que permite obtener el valor exacto de la asignación del portafolio $\alpha$. 
 
 Para implementar la solución es necesario obtener la matriz de covarianza $\Sigma_t$ que se ha calculado previamente en **getSigmaMV**, este enfoque justifica el uso de los modelos ARIMA para la volatilidd (elementos diagonales de $\Sigma_t$) mientra que la dependencia entre los activos se saca de la historia de los datos.
 
@@ -228,6 +228,62 @@ La gráfica muestra la relación entre el retorno acumulado y el parámetro de r
 Elegir valores $\gamma<5$ conllevarían un riesgo mucho mayor y a su vez un rendimiento elevado, si se busca un equilibrio entre rendimiento y seguridad el valor de $\gamma=5$ sería adecuado, pero si se busca maximizar el retorno el valor de $\gamma=1$ sería el adecuado.
 
 Como Conclusión se elige $\gamma=5$ como el valor de riesgo ya que busca un rendimiento alto mientras que mantiene el riesgo bajo control según la curva mostrada.
+
+# Apartado 3.2
+
+El objetivo sigue siendo maximizar la función de utilidad Media-Varianza, pero a diferencia del apartado 3.1, en este caso se prohíben las posiciones cortas, lo que introduce una restricción de desigualdad:
+$$\alpha_{t,i} \ge 0 \quad \text{para todo } i=1,...,5$$
+
+Al combinar esta restricción con la restricción de presupuesto (suma de ponderaciones igual a 1), el problema de optimización cuadrática a resolver es el siguiente:
+$$\min_{\alpha} \left\{\frac{\gamma}{2}\alpha_{t}^{T}\Sigma_{t}\alpha_{t} - \alpha_{t}^{T}\mu_{t}\right\} \quad \text{s.a} \quad \sum_{i}\alpha_{t,i} = 1 \quad \text{y} \quad \alpha_{t,i} \ge 0$$
+
+Debido a la presencia de la restricción de no-negatividad ($\alpha_i \ge 0$), la solución analítica con multiplicadores de Lagrange (Kuhn-Tucker) es más compleja y generalmente se aborda mediante métodos numéricos. Para resolver este problema de programación cuadrática de manera eficiente, se ha utilizado la función solve.QP de la librería de R quadprog. La función **getAlphaMVPos** implementa los siguientes componentes requeridos por quadprog:
+
+- Matriz $D$ (Dmat_qp): matriz $D=\gamma\Sigma_t$, que define la parte cuadrática del problema.
+- Vector $d$ (dvec_qp): vector $d=\mu_t$, que define la parte lineal.
+- Matriz de Restricciones $A$ (Amat_qp): contiene las restricciones de igualdad y desigualdad.
+1. Igualdad: $\sum_{i}\alpha_{t,i}=1$.
+2. Desigualdad: $\alpha_{t,i} \ge 0$, representada por la matriz identidad $\mathbf{I}$ (A_ineq <- diag(n)).
+- Vector $b$ (bvec_qp): contiene los valores de las restricciones (b_eq y b_ineq).
+
+La solución obtenida proporciona la asignación óptima $\alpha^{*}$ para cada periodo $t$ sujeta a la prohibición de posiciones cortas.
+
+La estimación de la matriz de covarianza $\Sigma_t$ para este apartado (**getSigmaMVPos**) se realiza con el mismo enfoque que en la Sección 3.1. La volatilidad individual (elementos diagonales $\sigma_{i,t}$) se obtiene de los modelos ARIMA del Apartado 2. La matriz de correlación ($R$) se estima a partir del historial de rendimientos y la matriz de covarianza se construye mediante la descomposición $\Sigma_t = DRD$.
+
+```{r,fig.width=8, fig.height=3}
+plot_retorno_pos <- ggplot(df_mv_pos, aes(x = Gamma, y = Retorno)) + 
+  geom_line(size = 1.2) + 
+  geom_point(size = 3) + 
+  labs(
+    title = "Retorno acumulado vs. Aversión al riesgo",
+    x = expression(paste("Aversión al riesgo (", gamma, ")")),
+    y = "Retorno acumulado"
+  ) + 
+  theme_minimal() + 
+  theme(plot.title = element_text(size = 12))
+
+# Gráfica 2: Utilidad Agregada vs. Aversión al Riesgo
+plot_utilidad_pos <- ggplot(df_mv_pos, aes(x = Gamma, y = Utilidad)) + 
+  geom_line(size = 1.2) + 
+  geom_point(size = 3) + 
+  labs(
+    title = "Utilidad agregada vs. Aversión al riesgo",
+    x = expression(paste("Aversión al riesgo (", gamma, ")")),
+    y = "Utilidad agregada"
+  ) + 
+  theme_minimal() + 
+  theme(plot.title = element_text(size = 12))
+
+# Combinamos las dos gráficas
+plot_retorno_pos | plot_utilidad_pos
+```
+Observando la gráfica, vemos que el retorno aumenta rápidamente hasta alcanzar su máximo alrededor de $\gamma=15$. A diferencia del caso sin restricciones, la utilidad muestra un mínimo cerca de $\gamma=6$ y luego aumenta progresivamente hasta $\gamma=20$. 
+Este comportamiento se debe a la interacción entre la restricción de no posiciones cortas y el término de penalización por riesgo. Al aumentar $\gamma$, la cartera se vuelve menos volátil y se diversifica entre todos los actuvos, lo que puede aumentar el retorno ajustado por riesgo (utilidad). 
+
+Este valor se justifica porque:
+1. Maximiza el retorno acumulado (alcanzando el punto más alto de la curva).
+2. Maximiza la utilidad agregada en el rango analizado.
+3. Prioriza la diversificación, evitando la concentración extrema en un solo activo que ocurre con valores de $\gamma$ más pequeños (cercanos a 6), donde la utilidad es mínima.
 
 # Resultados
 
