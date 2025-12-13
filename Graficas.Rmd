@@ -246,41 +246,6 @@ La solución obtenida proporciona la asignación óptima $\alpha^{*}$ para cada 
 
 La estimación de la matriz de covarianza $\Sigma_t$ para este apartado (**getSigmaMVPos**) se realiza con el mismo enfoque que en la Sección 3.1. La volatilidad individual (elementos diagonales $\sigma_{i,t}$) se obtiene de los modelos ARIMA del Apartado 2. La matriz de correlación ($R$) se estima a partir del historial de rendimientos y la matriz de covarianza se construye mediante la descomposición $\Sigma_t = DRD$.
 
-```{r,fig.width=8, fig.height=3}
-plot_retorno_pos <- ggplot(df_mv_pos, aes(x = Gamma, y = Retorno)) + 
-  geom_line(size = 1.2) + 
-  geom_point(size = 3) + 
-  labs(
-    title = "Retorno acumulado vs. Aversión al riesgo",
-    x = expression(paste("Aversión al riesgo (", gamma, ")")),
-    y = "Retorno acumulado"
-  ) + 
-  theme_minimal() + 
-  theme(plot.title = element_text(size = 12))
-
-# Gráfica 2: Utilidad Agregada vs. Aversión al Riesgo
-plot_utilidad_pos <- ggplot(df_mv_pos, aes(x = Gamma, y = Utilidad)) + 
-  geom_line(size = 1.2) + 
-  geom_point(size = 3) + 
-  labs(
-    title = "Utilidad agregada vs. Aversión al riesgo",
-    x = expression(paste("Aversión al riesgo (", gamma, ")")),
-    y = "Utilidad agregada"
-  ) + 
-  theme_minimal() + 
-  theme(plot.title = element_text(size = 12))
-
-# Combinamos las dos gráficas
-plot_retorno_pos | plot_utilidad_pos
-```
-Observando la gráfica, vemos que el retorno aumenta rápidamente hasta alcanzar su máximo alrededor de $\gamma=15$. A diferencia del caso sin restricciones, la utilidad muestra un mínimo cerca de $\gamma=6$ y luego aumenta progresivamente hasta $\gamma=20$. 
-Este comportamiento se debe a la interacción entre la restricción de no posiciones cortas y el término de penalización por riesgo. Al aumentar $\gamma$, la cartera se vuelve menos volátil y se diversifica entre todos los actuvos, lo que puede aumentar el retorno ajustado por riesgo (utilidad). 
-
-Este valor se justifica porque:
-1. Maximiza el retorno acumulado (alcanzando el punto más alto de la curva).
-2. Maximiza la utilidad agregada en el rango analizado.
-3. Prioriza la diversificación, evitando la concentración extrema en un solo activo que ocurre con valores de $\gamma$ más pequeños (cercanos a 6), donde la utilidad es mínima.
-
 # Resultados
 
 ```{r}
