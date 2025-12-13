@@ -4,8 +4,8 @@ subtitle: "Máster en Ciencia de Datos - UV"
 author: "Adrián Carrasco Alcalá, Javier Herrero Pérez y Clara Montalvá Barcenilla"
 date: "Curso 2025-2026"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -38,7 +38,7 @@ El trabajo se ha dividido entre los miembros del grupo de la siguiente manera:
 
 # Apartado 2
 
-```{r pressure, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=6, fig.height=3}
+```{r pressure, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=5, fig.height=2}
 source("solucion_XXX.R", echo = F)
 ```
 
@@ -73,10 +73,8 @@ for (i in seq_along(gamma_values)) {
   alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaMV, getSigmaMV, getAlphaMV, Xtrain, Xtest)
   passChecks <- getChecks(alpha_hat, mode="sum1")
   ret <- getRet(alpha_hat, Xtest, passChecks)
-  evals <- c(evals, retMV=ret)
   Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaMV, getSigmaMV, passChecks, Umv)
-  evals <- c(evals,  Umv=Umv_rel)
-  
+
   # d. Guardar los resultados
   results_mv_sweep$Retorno_MV[i] <- ret
   results_mv_sweep$Utilidad_MV[i] <- Umv_rel
@@ -103,10 +101,8 @@ for (i in seq_along(gamma_values)) {
   alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaMVPos, getSigmaMVPos, getAlphaMVPos, Xtrain, Xtest)
   passChecks <- getChecks(alpha_hat, mode=c("sum1","pos"))
   ret <- getRet(alpha_hat, Xtest, passChecks)
-  evals <- c(evals, retMVPos=ret)
   Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaMVPos, getSigmaMVPos, passChecks, Umv)
-  evals <- c(evals,  UmvPos=Umv_rel)
-  
+
 
   results_mv_pos_sweep$Retorno_MVPos[i] <- ret
   results_mv_pos_sweep$Utilidad_MVPos[i] <- Umv_rel
@@ -132,7 +128,6 @@ for (i in seq_along(gamma_values)) {
   alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaLog, getSigmaLog, getAlphaLog, Xtrain, Xtest)
   passChecks <- getChecks(alpha_hat, mode=c("sum1"))
   ret <- getRet(alpha_hat, Xtest, passChecks)
-  evals <- c(evals, retLog=ret)
   Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaLog, getSigmaLog, passChecks, Umv)
   
   results_log_sweep$Retorno_Log[i] <- ret
