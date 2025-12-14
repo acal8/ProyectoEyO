@@ -4,8 +4,8 @@ subtitle: "Máster en Ciencia de Datos - UV"
 author: "Adrián Carrasco Alcalá, Javier Herrero Pérez y Clara Montalvá Barcenilla"
 date: "Curso 2025-2026"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -220,7 +220,7 @@ La gráfica muestra la relación entre el retorno acumulado y el parámetro de r
 
 Elegir valores $\gamma<5$ conllevaría un riesgo mucho mayor y a su vez un rendimiento elevado, si se busca un equilibrio entre rendimiento y seguridad el valor de $\gamma=5$ sería adecuado, pero si se busca maximizar el retorno el valor de $\gamma=1$ sería el adecuado.
 
-Como conclusión se elige $\gamma=5$ como el valor de riesgo ya que busca un rendimiento alto mientras que mantiene el riesgo bajo control según la curva mostrada.
+Como conclusión se elige $\gamma=5$ como el valor de riesgo ya que busca una utilidad agregada equilibrada como se observa en la figura de la derecha, manteniendo un rendimiento alto mientras que mantiene el riesgo bajo control según la curva mostrada. 
 
 # Apartado 3.2
 
