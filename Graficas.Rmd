@@ -4,8 +4,8 @@ subtitle: "Máster en Ciencia de Datos - UV"
 author: "Adrián Carrasco Alcalá, Javier Herrero Pérez y Clara Montalvá Barcenilla"
 date: "Curso 2025-2026"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -294,5 +294,8 @@ Con todo esto, encontrar un valor óptimo de $\gamma$ en este caso no es tan sen
 # Resultados
 
 ```{r}
-evals
+kable(t(evals), 
+      caption = "Resultados finales tras 24 meses",
+      col.names = c('RMSE', 'Rendimiento apartado 3.1 (retMV)', 'Utilidad apartado 3.1 (Umv)', 'Rendimiento apartado 3.2 (retMVPos)', 'Utilidad apartado 3.2 (UmvPos)', 'Rendimiento apartado 4 (retLog)', 'Utilidad apartado 4 (ULog)'),
+      digits = 4)
 ```
