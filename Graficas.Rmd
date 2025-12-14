@@ -4,8 +4,8 @@ subtitle: "Máster en Ciencia de Datos - UV"
 author: "Adrián Carrasco Alcalá, Javier Herrero Pérez y Clara Montalvá Barcenilla"
 date: "Curso 2025-2026"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -214,7 +214,7 @@ plot_retorno | plot_utilidad
 
 La gráfica muestra la relación entre el retorno acumulado y el parámetro de riesgo $\gamma$. El comportamiento genera que se observa es que el retorno cae drásticamente a medida que $\gamma$ aumenta hasta que se estabiliza. Tomar un valor pequeño de $\gamma$ conlleva tomar mucho riesgo, provocando un mayor retorno acumulado. 
 
-- Riesgo mínimo: Elegir valores altos como $\gamma=20$ significa priorizar la minimización extrema del riesgo. Aunque esto resulta en cartera más segura, se observa que se penaliza excesivamente el rendimiento, logrando un retorno acumulado de $295\%$ y una utilidad promedio de $Y_{MV}=7.011$.
+- Riesgo mínimo: Elegir valores altos como $\gamma=20$ significa priorizar la minimización extrema del riesgo. Aunque esto resulta en cartera más segura, se observa que se penaliza excesivamente el rendimiento, logrando un retorno acumulado de $295\%$ y una utilidad promedio de $U_{MV}=7.011$.
 
 - Balance óptimo: Si se busca un balance eficiente entre riesgo y retorno el valor de $\gamma=5$ es un punto destacable en la curva de la gráfica. Este valor impone un riesgo considerable y un retorno grande $9107\%$ lo que resulta en una utilidad agregada mucho mayor $U_{MV}=22.88$.
 
