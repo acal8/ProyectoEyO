@@ -4,8 +4,8 @@ subtitle: "Máster en Ciencia de Datos - UV"
 author: "Adrián Carrasco Alcalá, Javier Herrero Pérez y Clara Montalvá Barcenilla"
 date: "Curso 2025-2026"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -38,7 +38,7 @@ El trabajo se ha dividido entre los miembros del grupo de la siguiente manera:
 
 # Apartado 2
 
-```{r pressure, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=5, fig.height=2}
+```{r pressure, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=6, fig.height=3}
 source("solucion_XXX.R", echo = F)
 ```
 
@@ -128,10 +128,10 @@ for (i in seq_along(gamma_values)) {
   alpha_hat <- getAlpha_ts(mu_hat, se_hat, current_gammaLog, getSigmaLog, getAlphaLog, Xtrain, Xtest)
   passChecks <- getChecks(alpha_hat, mode=c("sum1"))
   ret <- getRet(alpha_hat, Xtest, passChecks)
-  Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaLog, getSigmaLog, passChecks, Umv)
+  Ulog_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, current_gammaLog, getSigmaLog, passChecks, Ulog)
   
   results_log_sweep$Retorno_Log[i] <- ret
-  results_log_sweep$Utilidad_Log[i] <- Umv_rel
+  results_log_sweep$Utilidad_Log[i] <- Ulog_rel
 }
 
 
@@ -161,15 +161,15 @@ df_log <- results_log_sweep %>%
 # Apartado 3.1
 
 La función de utilidad media-varianza es
-$U_{MV}(\alpha_t,\gamma;\mu_t,\Sigma_t)=\alpha_t^T \mu_t-\frac{\gamma}{2}\alpha_t^T \sum_t \alpha$.
+$U_{MV}(\alpha_t,\gamma;\mu_t,\Sigma_t)=\alpha_t^T \mu_t-\dfrac{\gamma}{2}\alpha_t^T \sum_t \alpha$.
 
 Esta función se maximiza, esto equivale a minimizar $-U_{MV}$ sujeto a la restricción $\sum \alpha_t=1$. Se trata de un problema de programación cuadrática sin restricciones de desigualdad, entonces el problema a resolver es el siguiente:
 
-$$Min\{ \frac{\gamma}{2} \alpha_t^T \sum_t \alpha_t - \alpha_t^T \mu_t\} \hspace{3mm} \text{s.a} \hspace{1mm} \sum \alpha_t=1$$
+$$Min\{ \dfrac{\gamma}{2} \alpha_t^T \sum_t \alpha_t - \alpha_t^T \mu_t\} \quad \text{s.a} \quad \sum \alpha_t=1$$
 
 En este caso, donde se permiten las posiciones cortas, la solución óptima $\alpha^*$ se puede obtener de manera teórica mediante el uso de multiplicadores de Lagrange. Se define el Lagrangiano $L$ de la siguiente forma:
 
-$$L=\frac{\gamma}{2} \alpha_t^T \sum_t \alpha_t - \alpha_t^T \mu_t + \lambda(\textbf{1}^T\cdot \alpha-1)$$
+$$L=\dfrac{\gamma}{2} \alpha_t^T \sum_t \alpha_t - \alpha_t^T \mu_t + \lambda(\textbf{1}^T\cdot \alpha-1)$$
 donde $\textbf{1}^T$ es un vector columna de 1 con N filas, donde N es el número de activos que en este problema es 5. Se resuelve el sistema:
 
 $$\frac{\partial L}{\partial \alpha}=\gamma \Sigma \alpha^*-\mu+\lambda^* \textbf{1}=0$$
@@ -179,38 +179,37 @@ donde $\alpha^*$, $\lambda^*$ las soluciones del sistema.
 Sustituyendo se obtiene lo siguientes resultados:
 
 $$\lambda^*=\frac{\textbf{1}^T\Sigma^{-1}\mu-\gamma}{\textbf{1}^T\Sigma^{-1}\textbf{1}}$$
-$$\alpha^*=\frac{1}{\gamma}\Sigma^{-1}(\mu-\lambda^*\textbf{1})$$
+$$\alpha^*=\dfrac{1}{\gamma}\Sigma^{-1}(\mu-\lambda^*\textbf{1})$$
 
-Esta solución analítica se implementa directamente en la función **getAlphaMV**, lo que permite obtener el valor exacto de la asignación del portafolio $\alpha$. 
+Esta solución analítica se implementa directamente en la función `getAlphaMV`, lo que permite obtener el valor exacto de la asignación del portafolio $\alpha$. 
 
-Para implementar la solución es necesario obtener la matriz de covarianza $\Sigma_t$ que se ha calculado previamente en **getSigmaMV**, este enfoque justifica el uso de los modelos ARIMA para la volatilidd (elementos diagonales de $\Sigma_t$) mientra que la dependencia entre los activos se saca de la historia de los datos.
+Para implementar la solución es necesario obtener la matriz de covarianza $\Sigma_t$ que se ha calculado previamente en `getSigmaMV`, este enfoque justifica el uso de los modelos ARIMA para la volatilidd (elementos diagonales de $\Sigma_t$) mientra que la dependencia entre los activos se saca de la historia de los datos.
 
 ```{r,fig.width=8, fig.height=3}
-
+# 1. Gráfica del retorno acumulado
 plot_retorno <- ggplot(df_mv, aes(x = Gamma, y = Retorno)) +
 geom_line(size = 1.2) +
 geom_point(size = 3) +
 labs(
-title = "Retorno Acumulado vs. Aversión al Riesgo",
-x = expression(paste("Aversión al Riesgo (", gamma, ")")),
- y = "Retorno Acumulado"
+title = "Retorno acumulado vs. Aversión al riesgo",
+x = expression(paste("Aversión al riesgo (", gamma, ")")),
+ y = "Retorno acumulado"
 ) +
 theme_minimal()+theme(plot.title = element_text(size = 12))
 
-# 2. Gráfica de Utilidad Agregada
+# 2. Gráfica de la utilidad agregada
 plot_utilidad <- ggplot(df_mv, aes(x = Gamma, y = Utilidad)) +
 geom_line(size = 1.2) +
 geom_point(size = 3) +
 labs(
-title = "Utilidad Agregada vs. Aversión al Riesgo",
- x = expression(paste("Aversión al Riesgo (", gamma, ")")),
-y = "Utilidad Agregada"
+title = "Utilidad agregada vs. Aversión al riesgo",
+ x = expression(paste("Aversión al riesgo (", gamma, ")")),
+y = "Utilidad agregada"
 ) +
 theme_minimal()+theme(plot.title = element_text(size = 12))
 
 # Combinar las dos gráficas una al lado de la otra
 plot_retorno | plot_utilidad
-
 ```
 
 La gráfica muestra la relación entre el retorno acumulado y el parámetro de riesgo $\gamma$. El comportamiento genera que se observa es que el retorno cae drásticamente a medida que $\gamma$ aumenta hasta que se estabiliza. Tomar un valor pequeño de $\gamma$ conlleva tomar mucho riesgo, provocando un mayor retorno acumulado. 
@@ -231,20 +230,66 @@ $$\alpha_{t,i} \ge 0 \quad \text{para todo } i=1,...,5$$
 
 Al combinar esta restricción con la restricción de presupuesto (suma de ponderaciones igual a 1), el problema de optimización cuadrática a resolver es el siguiente:
 
-$$\min_{\alpha} \left\{\frac{\gamma}{2}\alpha_{t}^{T}\Sigma_{t}\alpha_{t} - \alpha_{t}^{T}\mu_{t}\right\} \quad \text{s.a} \quad \sum_{i}\alpha_{t,i} = 1 \quad \text{y} \quad \alpha_{t,i} \ge 0$$
+$$\min_{\alpha} \left\{\dfrac{\gamma}{2}\alpha_{t}^{T}\Sigma_{t}\alpha_{t} - \alpha_{t}^{T}\mu_{t}\right\} \quad \text{s.a} \quad \sum_{i}\alpha_{t,i} = 1 \quad \text{y} \quad \alpha_{t,i} \ge 0$$
 
-Debido a la presencia de la restricción de no-negatividad ($\alpha_i \ge 0$), la solución analítica con multiplicadores de Lagrange (Kuhn-Tucker) es más compleja y generalmente se aborda mediante métodos numéricos. Para resolver este problema de programación cuadrática de manera eficiente, se ha utilizado la función solve.QP de la librería de R quadprog. La función **getAlphaMVPos** implementa los siguientes componentes requeridos por quadprog:
+Debido a la presencia de la restricción de no-negatividad ($\alpha_i \ge 0$), la solución analítica con multiplicadores de Lagrange (Kuhn-Tucker) es más compleja y generalmente se aborda mediante métodos numéricos. Para resolver este problema de programación cuadrática de manera eficiente, se ha utilizado la función solve.QP de la librería de R quadprog. La función `getAlphaMVPos` implementa los siguientes componentes requeridos por quadprog:
 
-- Matriz $D$ (Dmat_qp): matriz $D=\gamma\Sigma_t$, que define la parte cuadrática del problema.
-- Vector $d$ (dvec_qp): vector $d=\mu_t$, que define la parte lineal.
-- Matriz de Restricciones $A$ (Amat_qp): contiene las restricciones de igualdad y desigualdad.
+- Matriz $D$: matriz $D=\gamma\Sigma_t$, que define la parte cuadrática del problema.
+- Vector $d$: vector $d=\mu_t$, que define la parte lineal.
+- Matriz de Restricciones $A$: contiene las restricciones de igualdad y desigualdad.
 1. Igualdad: $\sum_{i}\alpha_{t,i}=1$.
 2. Desigualdad: $\alpha_{t,i} \ge 0$, representada por la matriz identidad $\mathbf{I}$ (A_ineq <- diag(n)).
-- Vector $b$ (bvec_qp): contiene los valores de las restricciones (b_eq y b_ineq).
+- Vector $b$: contiene los valores de las restricciones (b_eq y b_ineq).
 
 La solución obtenida proporciona la asignación óptima $\alpha^{*}$ para cada periodo $t$ sujeta a la prohibición de posiciones cortas.
 
-La estimación de la matriz de covarianza $\Sigma_t$ para este apartado (**getSigmaMVPos**) se realiza con el mismo enfoque que en la Sección 3.1. La volatilidad individual (elementos diagonales $\sigma_{i,t}$) se obtiene de los modelos ARIMA del Apartado 2. La matriz de correlación ($R$) se estima a partir del historial de rendimientos y la matriz de covarianza se construye mediante la descomposición $\Sigma_t = DRD$.
+La estimación de la matriz de covarianza $\Sigma_t$ para este apartado (`getSigmaMVPos`) se realiza con el mismo enfoque que en la Sección 3.1. La volatilidad individual (elementos diagonales $\sigma_{i,t}$) se obtiene de los modelos ARIMA del Apartado 2. La matriz de correlación ($R$) se estima a partir del historial de rendimientos y la matriz de covarianza se construye mediante la descomposición $\Sigma_t = DRD$.
+
+# Apartado 4
+
+```{r,fig.width=8, fig.height=3}
+# 1. Gráfica del retorno acumulado
+plot_retorno_log <- ggplot(df_log, aes(x = Gamma, y = Retorno)) +
+geom_line(size = 1.2) +
+geom_point(size = 3) +
+labs(
+title = "Retorno acumulado vs. Aversión al riesgo",
+x = expression(paste("Aversión al riesgo (", gamma, ")")),
+ y = "Retorno acumulado"
+) +
+theme_minimal()+theme(plot.title = element_text(size = 12))
+
+# 2. Gráfica de la utilidad agregada
+plot_utilidad_log <- ggplot(df_log, aes(x = Gamma, y = Utilidad)) +
+geom_line(size = 1.2) +
+geom_point(size = 3) +
+labs(
+title = "Utilidad agregada vs. Aversión al riesgo",
+ x = expression(paste("Aversión al riesgo (", gamma, ")")),
+y = "Utilidad agregada"
+) +
+theme_minimal()+theme(plot.title = element_text(size = 12))
+
+# Combinar las dos gráficas una al lado de la otra
+plot_retorno_log | plot_utilidad_log
+```
+
+
+```{r}
+library(knitr)
+
+kable(df_log[,-4], 
+      caption = "Retorno y utilidad acumulada para cada gamma")
+```
+
+
+El comportamiento que se observa es extremo y atípico en comparación con una curva teórica suave. Obtenemos valores extremadamente grandes que caen rápidamente a 0. La función de utilidad agregada, sin embargo, sí que presenta un comportamiento más relativamente más suave.
+
+Para valores $\gamma$ inferiores a 8, tenemos una zona de inestabilidad en la que la utilidad agregada es extremadamente volátil Obtenemos, por tanto, un portafolio muy sensible y posiblemente inestable.
+
+A partir $\gamma = 8$, la función de utilidad deja de decrecer a tanta velocidad, aunque no empieza a estabilizarse hasta que se alcanzan valores de $\gamma \geq 15$.
+
+Con todo esto, encontrar un valor óptimo de $\gamma$ en este caso no es tan sencillo. Asumir demasiado riesgo puede llevarnos a grandes pérdidas. Lo que parece claro es que deberíamos elegir un $\gamma \geq 8$, e incluso $\gamma \geq 15$, si lo que priorizamos es la seguridad en nuestra inversión.
 
 # Resultados
 

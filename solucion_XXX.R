@@ -301,8 +301,8 @@ alpha_hat <- getAlpha_ts(mu_hat, se_hat, gammaLog, getSigmaLog, getAlphaLog, Xtr
 passChecks <- getChecks(alpha_hat, mode=c("sum1"))
 ret <- getRet(alpha_hat, Xtest, passChecks)
 evals <- c(evals, retLog=ret)
-Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaLog, getSigmaLog, passChecks, Umv)
-evals <- c(evals,  UmvPosInt=Umv_rel)
+Umv_rel <- getUEval(alpha_hat, mu_hat, se_hat, Xtrain, Xtest, gammaLog, getSigmaLog, passChecks, Ulog)
+evals <- c(evals,  ULog=Umv_rel)
 
 evals
 
