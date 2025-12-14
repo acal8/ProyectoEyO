@@ -279,7 +279,8 @@ plot_retorno_log | plot_utilidad_log
 library(knitr)
 
 kable(df_log[,-4], 
-      caption = "Retorno y utilidad acumulada para cada gamma")
+      caption = "Retorno y utilidad acumulada para cada gamma",
+      digits = c(4, 4, 4))
 ```
 
 
@@ -298,6 +299,8 @@ Visualicemos los resultados obtenidos a 24 meses vista en la siguiente tabla.
 ```{r}
 kable(t(evals), 
       caption = "Resultados finales tras 24 meses",
-      col.names = c('RMSE', 'Rendimiento apartado 3.1 (retMV)', 'Utilidad apartado 3.1 (Umv)', 'Rendimiento apartado 3.2 (retMVPos)', 'Utilidad apartado 3.2 (UmvPos)', 'Rendimiento apartado 4 (retLog)', 'Utilidad apartado 4 (ULog)'),
-      digits = 4)
+      align = "c",
+      col.names = c('RMSE', 'Rendimiento <br> apartado 3.1 <br> (retMV)', 'Utilidad <br> apartado 3.1 <br> (Umv)', 'Rendimiento <br> apartado 3.2 <br> (retMVPos)', 'Utilidad <br> apartado 3.2 <br> (UmvPos)', 'Rendimiento <br> apartado 4 <br> (retLog)', 'Utilidad <br> apartado 4 <br> (ULog)'),
+      digits = 4,
+      escape = FALSE)
 ```
