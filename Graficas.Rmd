@@ -293,6 +293,8 @@ Con todo esto, encontrar un valor óptimo de $\gamma$ en este caso no es tan sen
 
 # Resultados
 
+Visualicemos los resultados obtenidos a 24 meses vista en la siguiente tabla.
+
 ```{r}
 kable(t(evals), 
       caption = "Resultados finales tras 24 meses",
