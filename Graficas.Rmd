@@ -27,12 +27,16 @@ El trabajo se ha dividido entre los miembros del grupo de la siguiente manera:
 
 # Apartado 2
 
+
+
 ```{r pressure, echo=FALSE, message=FALSE, warning=FALSE, results='hide', fig.width=6, fig.height=3}
 source("solucion_XXX.R", echo = F)
 ```
 
 
-La optimización de la cartera en cada periodo $t$ requiere estimaciones del rendimiento esperado $\mu_t$ y de la matriz de covarianza $\Sigma_t$ para los $N=5$ activos. Para ello, se utilizó un enfoque de modelos de series temporales aplicando modelos autoregresivos ARIMA. Para cada uno de los cinco activos se ha adoptado un modelo ARIMA y se han ido estudiando los valores a partir del onestep. Los datos de los que disponemos están formados por 10 años (120 periodos), se ha decidido entrenar con 8 años y los otros 2 años como valores de test. La figura anterior permite evaluar la calidad del modelo de predicción ARIMA en el periodo de prueba. La gráfica muestra la comparación de los rendimientos reales frente a los rendimientos pronosticados para un solo acivo durante el periodo de prueba. Se observa que aunque la amplitud no sea perfecta, sí que es capaz de captar correctamente cuando sube y cuando baja.
+La optimización de la cartera en cada periodo $t$ requiere estimaciones del rendimiento esperado $\mu_t$ y de la matriz de covarianza $\Sigma_t$ para los $N=5$ activos. Para ello, se ha utilizado un enfoque de modelos de series temporales aplicando modelos autoregresivos ARIMA. Más concretamente, para cada uno de los cinco activos se ha adoptado un modelo ARIMA y se han ido estudiando los valores a partir de una función oneStepAhead.
+
+Los datos de los que disponemos se extienden a lo largo de 10 años (120 periodos), por lo que se ha decidido entrenar con 8 años y los otros 2 años como valores de test. La figura anterior permite evaluar la calidad del modelo de predicción ARIMA en el periodo de prueba. La gráfica muestra la comparación de los rendimientos reales frente a los rendimientos pronosticados para un solo acivo durante el periodo de prueba. Se observa que aunque la amplitud no sea perfecta, sí que es capaz de captar correctamente cuando sube y cuando baja.
 
 El resultado del RMSE promedio es del `r round(evals[1],4)` (`r round(evals[1],4)*100`$\%$) en el pronóstico de los 5 activos. Dado el comportamiento ruidoso de las series este resultado indica que el modelo ARIMA ha logrado capturar la componente predecible de la señal. La magnitud del error se debe principalmente a la componente impredecible.
 
@@ -174,15 +178,15 @@ Esta solución analítica se implementa directamente en la función `getAlphaMV`
 
 Para implementar la solución es necesario obtener la matriz de covarianza $\Sigma_t$ que se ha calculado previamente en `getSigmaMV`, este enfoque justifica el uso de los modelos ARIMA para la volatilidd (elementos diagonales de $\Sigma_t$) mientra que la dependencia entre los activos se saca de la historia de los datos.
 
-```{r,fig.width=8, fig.height=3}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=3}
 # 1. Gráfica del retorno acumulado
 plot_retorno <- ggplot(df_mv, aes(x = Gamma, y = Retorno)) +
 geom_line(size = 1.2) +
 geom_point(size = 3) +
 labs(
-title = "Retorno acumulado vs. Aversión al riesgo",
+title = "Rendimiento acumulado vs. Aversión al riesgo",
 x = expression(paste("Aversión al riesgo (", gamma, ")")),
- y = "Retorno acumulado"
+ y = "Rendimiento acumulado"
 ) +
 theme_minimal()+theme(plot.title = element_text(size = 12))
 
@@ -236,15 +240,27 @@ La estimación de la matriz de covarianza $\Sigma_t$ para este apartado (`getSig
 
 # Apartado 4
 
-```{r,fig.width=8, fig.height=3}
+En este caso, la función de utilidad que se utiliza es la función de log-utilidad ($U_{\log}$), la cual reconoce la naturaleza compuesta del rendimiento de un portafolio. Su expresión durante un periodo es:
+
+$$U_{\log}(\alpha_t,\gamma;\mu_t,\Sigma_t)= \log(1 + \alpha^T \mu_t) - \dfrac{\gamma}{2} \dfrac{\alpha_t^T \Sigma_t \alpha_t}{(1 + \alpha_t^T \mu_t)^2}.$$
+
+Se busca maximizar dicha función, lo cual equivale al problema de minimizar $-U_{\log}$ sujeto a la restricción $\sum \alpha_t = 1$. Por tanto, el problema a resolver es el siguiente:
+
+$$\min_{\alpha} \left\{ \log(1 + \alpha^T \mu_t) - \dfrac{\gamma}{2} \dfrac{\alpha_t^T \Sigma_t \alpha_t}{(1 + \alpha_t^T \mu_t)^2} \right\} \quad \text{s.a} \quad \sum \alpha_t=1.$$
+
+Al igual que ocurría en el apartado 3.2, la solución analítica de este problema con multiplicadores de Lagrange vuelve a ser compleja, por lo que se debe recurrir de nuevo a métodos numéricos.
+
+Para resolverlo, se ha utilizado la función `optim` de la librería de `stats`, partiendo de una asignación de pesos uniforme (mismo $\alpha$ para los 5 activos) y utilizando el método BFGS. 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=3}
 # 1. Gráfica del retorno acumulado
 plot_retorno_log <- ggplot(df_log, aes(x = Gamma, y = Retorno)) +
 geom_line(size = 1.2) +
 geom_point(size = 3) +
 labs(
-title = "Retorno acumulado vs. Aversión al riesgo",
+title = "Rendimiento acumulado vs. Aversión al riesgo",
 x = expression(paste("Aversión al riesgo (", gamma, ")")),
- y = "Retorno acumulado"
+ y = "Rendimiento acumulado"
 ) +
 theme_minimal()+theme(plot.title = element_text(size = 12))
 
@@ -264,26 +280,33 @@ plot_retorno_log | plot_utilidad_log
 ```
 
 
-```{r}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(knitr)
 
-kable(df_log[,-4], 
-      caption = "Retorno y utilidad acumulada para cada gamma",
-      digits = c(2, 4, 2))
+df_log[,2] <- formatC(df_log[, 2], format = "e", digits = 4)
+
+kable(df_log[,-4],
+      align = "c",
+      caption = "Rendimiento y utilidad acumulada para cada gamma",
+      col.names = c('Gamma', 'Rendimiento', 'Utilidad'),
+      digits = c(2, 0, 2),
+      escape = FALSE)
 ```
 
 
-El comportamiento que se observa es extremo y atípico en comparación con una curva teórica suave. Obtenemos valores extremadamente grandes que caen rápidamente a 0. La función de utilidad agregada, sin embargo, sí que presenta un comportamiento más relativamente más suave.
+El comportamiento que se observa es extremo y atípico en comparación con una curva teórica suave. Se obtienen valores extremadamente grandes que caen rápidamente a 0. La función de utilidad agregada, sin embargo, sí que presenta un comportamiento relativamente más suave.
 
-Para valores $\gamma$ inferiores a 8, tenemos una zona de inestabilidad en la que la utilidad agregada es extremadamente volátil Obtenemos, por tanto, un portafolio muy sensible y posiblemente inestable.
+Para valores $\gamma$ inferiores a 8, se tiene una zona de inestabilidad en la que la utilidad agregada es extremadamente volátil. Se obtiene, por tanto, un portafolio muy sensible y posiblemente inestable.
 
 A partir $\gamma = 8$, la función de utilidad deja de decrecer a tanta velocidad, aunque no empieza a estabilizarse hasta que se alcanzan valores de $\gamma \geq 15$.
 
-Con todo esto, encontrar un valor óptimo de $\gamma$ en este caso no es tan sencillo. Asumir demasiado riesgo puede llevarnos a grandes pérdidas. Lo que parece claro es que deberíamos elegir un $\gamma \geq 8$, e incluso $\gamma \geq 15$, si lo que priorizamos es la seguridad en nuestra inversión.
+Con todo esto, encontrar un valor óptimo de $\gamma$ en este caso no es tan sencillo. Asumir demasiado riesgo puede llevar a grandes pérdidas. Lo que parece claro es que se debería elegir un $\gamma \geq 8$, e incluso $\gamma \geq 15$, si lo que se prioriza es la seguridad en la inversión.
+
+Es por ello que se escoge un factor de aversión al riesgo $\gamma = 15$.
 
 # Resultados
 
-Visualicemos los resultados obtenidos a 24 meses vista en la siguiente tabla.
+Visualicemos los resultados obtenidos para cada uno de los apartados a 24 meses vista en la siguiente tabla.
 
 ```{r}
 kable(t(evals), 

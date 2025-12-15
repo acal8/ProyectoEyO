@@ -160,7 +160,7 @@ getAlphaMVPos <- function(mu,Sigma, gamma){
 # seccion 4 - 
 # utilidad log, alfa_i positiva o negativa
 ################################################
-gammaLog <- 20# INSERTAR VALOR EN REALES
+gammaLog <- 15# INSERTAR VALOR EN REALES
 
 # Funcion para estimar la matriz de covarianzas entre los rendimientos de los 5
 # activos a partir de las desviaciones estándares (que vendran de su modelo Arima)
