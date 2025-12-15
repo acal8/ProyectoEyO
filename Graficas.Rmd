@@ -13,17 +13,6 @@ knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
-
-
-
-
-
-
-
-
-
-
-
 # Organización del trabajo
 
 El trabajo se ha dividido entre los miembros del grupo de la siguiente manera:
@@ -165,7 +154,7 @@ $U_{MV}(\alpha_t,\gamma;\mu_t,\Sigma_t)=\alpha_t^T \mu_t-\dfrac{\gamma}{2}\alpha
 
 Esta función se maximiza, esto equivale a minimizar $-U_{MV}$ sujeto a la restricción $\sum \alpha_t=1$. Se trata de un problema de programación cuadrática sin restricciones de desigualdad, entonces el problema a resolver es el siguiente:
 
-$$Min\{ \dfrac{\gamma}{2} \alpha_t^T \sum_t \alpha_t - \alpha_t^T \mu_t\} \quad \text{s.a} \quad \sum \alpha_t=1$$
+$$\min_{\alpha}\{ \dfrac{\gamma}{2} \alpha_t^T \sum_t \alpha_t - \alpha_t^T \mu_t\} \quad \text{s.a} \quad \sum \alpha_t=1$$
 
 En este caso, donde se permiten las posiciones cortas, la solución óptima $\alpha^*$ se puede obtener de manera teórica mediante el uso de multiplicadores de Lagrange. Se define el Lagrangiano $L$ de la siguiente forma:
 
@@ -226,20 +215,20 @@ Como conclusión se elige $\gamma=5$ como el valor de riesgo ya que busca una ut
 
 El objetivo sigue siendo maximizar la función de utilidad Media-Varianza, pero a diferencia del apartado 3.1, en este caso se prohíben las posiciones cortas, lo que introduce una restricción de desigualdad:
 
-$$\alpha_{t,i} \ge 0 \quad \text{para todo } i=1,...,5$$
+$$\alpha_{t,i} \ge 0 \quad \forall \, i=1,...,5$$
 
 Al combinar esta restricción con la restricción de presupuesto (suma de ponderaciones igual a 1), el problema de optimización cuadrática a resolver es el siguiente:
 
 $$\min_{\alpha} \left\{\dfrac{\gamma}{2}\alpha_{t}^{T}\Sigma_{t}\alpha_{t} - \alpha_{t}^{T}\mu_{t}\right\} \quad \text{s.a} \quad \sum_{i}\alpha_{t,i} = 1 \quad \text{y} \quad \alpha_{t,i} \ge 0$$
 
-Debido a la presencia de la restricción de no-negatividad ($\alpha_i \ge 0$), la solución analítica con multiplicadores de Lagrange (Kuhn-Tucker) es más compleja y generalmente se aborda mediante métodos numéricos. Para resolver este problema de programación cuadrática de manera eficiente, se ha utilizado la función solve.QP de la librería de R quadprog. La función `getAlphaMVPos` implementa los siguientes componentes requeridos por quadprog:
+Debido a la presencia de la restricción de no-negatividad ($\alpha_i \ge 0$), la solución analítica con multiplicadores de Lagrange (Kuhn-Tucker) es más compleja y generalmente se aborda mediante métodos numéricos. Para resolver este problema de programación cuadrática de manera eficiente, se ha utilizado la función `solve.QP` de la librería de `quadprog`. La función `getAlphaMVPos` implementa los siguientes componentes requeridos por `quadprog`:
 
 - Matriz $D$: matriz $D=\gamma\Sigma_t$, que define la parte cuadrática del problema.
 - Vector $d$: vector $d=\mu_t$, que define la parte lineal.
 - Matriz de Restricciones $A$: contiene las restricciones de igualdad y desigualdad.
 1. Igualdad: $\sum_{i}\alpha_{t,i}=1$.
 2. Desigualdad: $\alpha_{t,i} \ge 0$, representada por la matriz identidad $\mathbf{I}$ (A_ineq <- diag(n)).
-- Vector $b$: contiene los valores de las restricciones (b_eq y b_ineq).
+- Vector $b$: contiene los valores de las restricciones (tanto de igualdad como de desigualdad).
 
 La solución obtenida proporciona la asignación óptima $\alpha^{*}$ para cada periodo $t$ sujeta a la prohibición de posiciones cortas.
 
@@ -280,7 +269,7 @@ library(knitr)
 
 kable(df_log[,-4], 
       caption = "Retorno y utilidad acumulada para cada gamma",
-      digits = c(4, 4, 4))
+      digits = c(2, 4, 2))
 ```
 
 
